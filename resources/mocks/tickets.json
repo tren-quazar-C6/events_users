@@ -1,0 +1,25 @@
+{
+    "upcoming": [
+        {
+            "id": "TKF-2026-001",
+            "event_title": "El Tiempo Recobrado",
+            "category": "Drama",
+            "date_label": "Sábado, 14 de Junio · 19:30h",
+            "venue": "Teatro Mayor Julio Mario Santo Domingo",
+            "city": "Bogotá",
+            "seat": "Fila F, Asiento 12 · Platea Central",
+            "image": null
+        },
+        {
+            "id": "TKF-2026-002",
+            "event_title": "Bodas de Sangre",
+            "category": "Teatro Clásico",
+            "date_label": "Viernes, 20 de Junio · 20:00h",
+            "venue": "Teatro Colón",
+            "city": "Bogotá",
+            "seat": "Palco B, Asiento 3",
+            "image": null
+        }
+    ],
+    "past": []
+}

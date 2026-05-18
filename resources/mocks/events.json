@@ -1,0 +1,55 @@
+{
+    "featured": {
+        "hero": {
+            "id": 1,
+            "title": "Los Miserables: El Musical",
+            "badge": "Más Popular",
+            "description": "Una producción épica que redefine el clásico de Víctor Hugo.",
+            "image": null
+        },
+        "grid": [
+            {
+                "id": 2,
+                "title": "Ecos del Silencio",
+                "category": "Danza Moderna",
+                "meta": "12 - 24 Jun",
+                "meta_icon": "calendar_today",
+                "image": null
+            },
+            {
+                "id": 3,
+                "title": "No Hay Drama",
+                "category": "Comedia",
+                "meta": "Teatro Cervantes",
+                "meta_icon": "location_on",
+                "image": null
+            }
+        ]
+    },
+    "upcoming": [
+        {
+            "id": 4,
+            "title": "Bodas de Sangre",
+            "subtitle": "Federico García Lorca · Teatro Mayor Julio Mario Santo Domingo",
+            "day": "14",
+            "month": "JUN",
+            "times": ["19:30h", "21:00h"]
+        },
+        {
+            "id": 5,
+            "title": "El Rey León",
+            "subtitle": "Musical · Teatro Colón",
+            "day": "18",
+            "month": "JUN",
+            "times": ["20:00h"]
+        },
+        {
+            "id": 6,
+            "title": "La Casa de Bernarda Alba",
+            "subtitle": "Federico García Lorca · Teatro Nacional",
+            "day": "22",
+            "month": "JUN",
+            "times": ["18:00h", "20:30h"]
+        }
+    ]
+}
