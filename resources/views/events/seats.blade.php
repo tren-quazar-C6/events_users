@@ -88,6 +88,14 @@
             if (!seat || seat.s === 'o' || seat.s === 'b') return;
             seat.s = seat.s === 'sel' ? 'a' : 'sel';
         },
+        seatClass(seat) {
+            if (seat === null) return 'w-4';
+            const base = 'w-8 h-8 rounded shadow-sm transition-transform ';
+            if (seat.s === 'a')   return base + 'bg-primary-container hover:scale-110 cursor-pointer';
+            if (seat.s === 'sel') return base + 'bg-tertiary-container ring-2 ring-tertiary ring-offset-2 hover:scale-110 cursor-pointer shadow-md';
+            if (seat.s === 'o')   return base + 'bg-secondary-fixed-dim opacity-60 cursor-not-allowed';
+            return base + 'bg-surface-dim cursor-not-allowed';
+        },
         get selected() {
             const result = [];
             this.rows.forEach(row => {
@@ -112,6 +120,13 @@
             <span class="font-label-lg text-label-lg text-primary uppercase tracking-[0.3em] mt-5 inline-block">Escenario</span>
         </div>
 
+        {{--
+            Tailwind scanner — clases dinámicas generadas por seatClass():
+            bg-primary-container bg-tertiary-container bg-secondary-fixed-dim bg-surface-dim
+            ring-2 ring-tertiary ring-offset-2 opacity-60 shadow-md
+            hover:scale-110 cursor-pointer cursor-not-allowed
+        --}}
+
         {{-- Grid de asientos --}}
         <div class="seat-grid flex flex-col gap-3 items-center">
             <template x-for="(row, rowIdx) in rows" :key="row.label">
@@ -120,14 +135,7 @@
                     <div class="flex gap-1.5 items-center">
                         <template x-for="(seat, seatIdx) in row.seats" :key="seatIdx">
                             <div
-                                :class="{
-                                    'w-4': seat === null,
-                                    'w-8 h-8 rounded shadow-sm transition-transform': seat !== null,
-                                    'bg-primary-container hover:scale-110 cursor-pointer': seat !== null && seat.s === \'a\',
-                                    'bg-tertiary-container ring-2 ring-tertiary ring-offset-2 hover:scale-110 cursor-pointer shadow-md': seat !== null && seat.s === \'sel\',
-                                    'bg-secondary-fixed-dim opacity-60 cursor-not-allowed': seat !== null && seat.s === \'o\',
-                                    'bg-surface-dim cursor-not-allowed': seat !== null && seat.s === \'b\'
-                                }"
+                                :class="seatClass(seat)"
                                 @click="seat !== null && toggleSeat(rowIdx, seatIdx)">
                             </div>
                         </template>
