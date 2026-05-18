@@ -4,6 +4,7 @@
 @source '../../vendor/laravel/jetstream/**/*.blade.php';
 @source '../../vendor/laravel/fortify/**/*.blade.php';
 @source '../../storage/framework/views/*.php';
+[x-cloak] { display: none !important; }
 
 @theme {
     /* ===== COLORES DEL BRANDING ===== */
