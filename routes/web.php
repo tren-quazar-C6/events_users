@@ -5,7 +5,8 @@ use App\Http\Controllers\AuthController;
 
 // ─── Públicas ───
 Route::get('/', fn () => view('home'))->name('home');
-Route::get('/catalog', fn () => view('catalog'))->name('catalog');
+//Route::get('/catalog', fn () => view('catalog'))->name('catalog');
+Route::get('/catalog', function () { $events = collect(require resource_path('mock/events.php')); return view('catalog', compact('events')); })->name('catalog');
 
 // ─── Auth ───
 Route::get('/login',     [AuthController::class, 'login'])->name('login');
