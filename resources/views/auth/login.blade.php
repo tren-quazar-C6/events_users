@@ -62,8 +62,7 @@
 
             <p class="mt-6 text-center text-sm text-sage-dark/70">
                 ¿No tienes cuenta?
-                <a href="#" class="text-sage font-semibold hover:underline">Regístrate</a>
-                {{-- href="#" temporal — register lo construimos en el próximo paso --}}
+                <a href="{{ route('register') }}" class="text-sage font-semibold hover:underline">Regístrate</a>
             </p>
         </div>
     </div>

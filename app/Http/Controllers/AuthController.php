@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
@@ -20,7 +22,7 @@ class AuthController extends Controller
         //    Si algo falla, Laravel redirige solito al form con los errores
         //    accesibles vía la variable $errors en la vista.
         $credentials = $request->validate([
-            'email'    => ['required', 'email'],
+            'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
 
@@ -45,6 +47,42 @@ class AuthController extends Controller
         return back()
             ->withErrors(['email' => 'Las credenciales no coinciden.'])
             ->onlyInput('email');
+    }
+
+    /** GET /register — muestra el formulario de registro */
+    public function showRegister()
+    {
+        return view('auth.register');
+    }
+
+    /** POST /register — crea el usuario y lo loguea automáticamente */
+    public function register(Request $request)
+    {
+        // 1. VALIDACIÓN
+        //    - email tiene que ser único en la tabla users
+        //    - 'confirmed' busca un campo password_confirmation en el form
+        //      y verifica que sea idéntico a password. Súper conveniente.
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        // 2. CREAR USUARIO
+        //    Hash::make encripta la contraseña con bcrypt antes de guardarla.
+        //    NUNCA guardes contraseñas en texto plano.
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+        ]);
+
+        // 3. AUTO-LOGIN tras el registro (UX: no obligamos a loguearse de nuevo)
+        Auth::login($user);
+        $request->session()->regenerate();
+
+        // 4. REDIRECT al dashboard
+        return redirect()->intended(route('dashboard'));
     }
 
     /** POST /logout — cierra la sesión */

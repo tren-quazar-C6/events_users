@@ -14,6 +14,8 @@ Route::get('/', function () {
 // redirige aquí cuando alguien intenta entrar sin sesión.
 Route::get('/login',  [AuthController::class, 'login'])->name('login');
 Route::post('/login', [AuthController::class, 'auth'])->name('auth.attempt');
+Route::get('/register',  [AuthController::class, 'showRegister'])->name('register');
+Route::post('/register', [AuthController::class, 'register'])->name('register.store');
 
 // Logout siempre va por POST (nunca GET) para evitar CSRF.
 Route::post('/logout', [AuthController::class, 'logout'])
