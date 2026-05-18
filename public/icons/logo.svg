@@ -1,0 +1,8 @@
+<svg viewBox="0 0 250 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Minimal abstract folded theater seat / curtain pleat icon -->
+  <path d="M30 70 L30 40 Q30 30 40 30 L60 30 Q70 30 70 40 L70 70 L30 70 Z" fill="#7BB394" />
+  <text x="50" y="65" font-family="Georgia, serif" font-size="30" font-weight="bold" fill="#FBF7F0" text-anchor="middle">T</text>
+  <path d="M30 70 L70 70 L75 80 L25 80 Z" fill="#2D4A3E" />
+  <rect x="35" y="35" width="30" height="5" rx="2.5" fill="#FAF7F2" opacity="0.3" />
+<text x="80" y="70" font-family="Georgia, serif" font-size="45" font-weight="bold" fill="#FAF7F2" opacity="0.3">Tickify</text>
+</svg>
