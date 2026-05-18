@@ -149,10 +149,11 @@
             </div>
 
             {{-- CTA compra --}}
-            <button class="w-full bg-primary-container text-on-primary-container py-4 rounded-xl font-label-lg text-label-lg font-bold hover:brightness-95 active:scale-95 transition-all shadow-md shadow-primary/10 flex items-center justify-center gap-2">
+            <a href="{{ route('events.seats', $event['id']) }}"
+               class="w-full bg-primary-container text-on-primary-container py-4 rounded-xl font-label-lg text-label-lg font-bold hover:brightness-95 active:scale-95 transition-all shadow-md shadow-primary/10 flex items-center justify-center gap-2">
                 <span class="material-symbols-outlined">confirmation_number</span>
                 Comprar entradas
-            </button>
+            </a>
 
             <p class="text-center font-label-sm text-label-sm text-on-surface-variant">
                 Quedan pocas entradas para esta función

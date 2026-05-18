@@ -24,6 +24,15 @@
     background: radial-gradient(circle at center, rgba(123, 179, 148, 0.15) 0%, transparent 70%);
 }
 
+.seat-grid {
+    perspective: 1000px;
+}
+
+.stage-curve {
+    border-bottom-left-radius: 50% 20%;
+    border-bottom-right-radius: 50% 20%;
+}
+
 @theme {
     /* ─── Tickify legacy tokens (landing, auth) ─── */
     --color-sage:       #7BB394;
