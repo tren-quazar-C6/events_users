@@ -33,8 +33,9 @@
 CLAUDE.local.md
 .claude/settings.local.json
 
-# ── Documentación local de estudio ──────────────────────
+# ── Documentación local de estudio y planes de trabajo ──
 /docsStudio
+/DEV3-PLAN.md
 
 # ── IDEs y editores ──────────────────────────────────────
 .DS_Store
