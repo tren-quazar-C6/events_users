@@ -79,11 +79,7 @@ Misma estructura standalone que el login.
 
 ## OAuth (estado UI)
 
-Los botones de Google OAuth no tienen backend implementado. Están diseñados para conectarse a `GET /auth/google` en el futuro (Laravel Socialite). El flujo esperado sería:
-
-```
-/auth/google → redirect a Google → callback /auth/google/callback → login o registro automático
-```
+Los botones de Google OAuth no tienen backend implementado. Están diseñados para conectarse a `GET /auth/google` en el futuro (Laravel Socialite).
 
 Por ahora, el atributo `href="#"` es un placeholder sin funcionalidad.
 
