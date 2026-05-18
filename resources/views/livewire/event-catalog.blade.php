@@ -63,7 +63,7 @@
                         <h3 class="font-display text-xl text-sage-dark mt-2 group-hover:text-sage transition">
                             {{ $event->title }}
                         </h3>
-                        <p class="text-sm text-sage-dark/60 mt-1">{{ $event->venue }}</p>
+                        
                         <p class="text-sm font-semibold text-sage mt-3">
                             Desde ${{ number_format($event->price_from, 0, ',', '.') }}
                         </p>

@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller
 {
@@ -17,16 +16,11 @@ class ProfileController extends Controller
     /** PATCH /dashboard/profile — actualiza nombre y email */
     public function updateProfile(Request $request)
     {
-        $user = $request->user();
-
         $validated = $request->validate([
-            'name'  => ['required', 'string', 'max:255'],
-            // 'unique' con ->ignore: el email debe ser único EXCEPTO si es el del propio usuario.
-            // Sin el ignore, el form fallaría al guardar el mismo email actual.
-            'email' => ['required', 'email', Rule::unique('users')->ignore($user->id)],
+            'name' => ['required', 'string', 'max:255'],
         ]);
 
-        $user->update($validated);
+        $request->user()->update($validated);
 
         return back()->with('status', 'Perfil actualizado correctamente.');
     }

@@ -51,7 +51,6 @@
                         <p class="font-display text-4xl text-sage-dark">
                             ${{ number_format($event->price_from, 0, ',', '.') }}
                         </p>
-                        <p class="mt-3 text-sm text-sage-dark/80">📍 {{ $event->venue }}</p>
 
                         @auth
                             <button class="w-full mt-6 bg-sage text-white font-semibold py-3 rounded-btn hover:bg-sage-dark transition">
