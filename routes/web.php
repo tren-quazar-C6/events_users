@@ -10,6 +10,13 @@ Route::get('/catalog', function () {
     return view('catalog', compact('events'));
 })->name('catalog');
 
+Route::get('/events/{id}', function ($id) {
+    $events = json_decode(file_get_contents(resource_path('mocks/events.json')), true);
+    $event  = collect($events['upcoming'])->firstWhere('id', (int) $id);
+    abort_if(!$event, 404);
+    return view('events.show', compact('event'));
+})->name('events.show');
+
 // ─── Auth ───
 Route::get('/login',     [AuthController::class, 'login'])->name('login');
 Route::post('/login',    [AuthController::class, 'auth'])->name('auth.attempt');

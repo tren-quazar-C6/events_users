@@ -179,10 +179,16 @@
                     @endforeach
                 </div>
 
-                {{-- CTA --}}
-                <button class="w-full md:w-auto bg-primary text-on-primary px-8 py-3 rounded-xl font-label-lg text-label-lg group-hover:brightness-110 transition-all shrink-0">
-                    Comprar Tickets
-                </button>
+                {{-- CTAs --}}
+                <div class="flex flex-col sm:flex-row gap-3 shrink-0">
+                    <a href="{{ route('events.show', $event['id']) }}"
+                       class="text-center border border-primary text-primary px-6 py-3 rounded-xl font-label-lg text-label-lg font-bold hover:bg-secondary-container transition-all">
+                        Ver info
+                    </a>
+                    <button class="bg-primary text-on-primary px-8 py-3 rounded-xl font-label-lg text-label-lg group-hover:brightness-110 transition-all">
+                        Comprar Tickets
+                    </button>
+                </div>
             </div>
             @endforeach
         </div>
