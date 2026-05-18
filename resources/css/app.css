@@ -1,11 +1,27 @@
 @import 'tailwindcss';
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../views';
+@source '../../vendor/laravel/jetstream/**/*.blade.php';
+@source '../../vendor/laravel/fortify/**/*.blade.php';
 @source '../../storage/framework/views/*.php';
-@source '../**/*.blade.php';
-@source '../**/*.js';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    /* ===== COLORES DEL BRANDING ===== */
+    --color-sage:       #7BB394;
+    --color-sage-light: #C4E0D0;
+    --color-sage-dark:  #2D4A3E;
+    --color-cream:      #FAF7F2;
+    --color-peach:      #F4B895;
+    --color-coral:      #E89B8C;
+
+    /* ===== TIPOGRAFÍAS ===== */
+    --font-sans:    "DM Sans", system-ui, sans-serif;
+    --font-display: "Fraunces", serif;
+
+    /* ===== RADIOS ===== */
+    --radius-card: 16px;
+    --radius-btn:  12px;
+
+    /* ===== SOMBRAS ===== */
+    --shadow-soft: 0 2px 12px rgba(45, 74, 62, 0.08);
 }
