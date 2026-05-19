@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PurchaseController;
@@ -19,13 +20,6 @@ Route::get('/events/{id}', function ($id) {
     return view('events.show', compact('event'));
 })->name('events.show');
 
-Route::get('/events/{id}/seats', function ($id) {
-    $events = json_decode(file_get_contents(resource_path('mocks/events.json')), true);
-    $event  = collect($events['upcoming'])->firstWhere('id', (int) $id);
-    abort_if(!$event, 404);
-    return view('events.seats', compact('event'));
-})->name('events.seats');
-
 // ─── Auth ───
 Route::get('/login',     [AuthController::class, 'login'])->name('login');
 Route::post('/login',    [AuthController::class, 'auth'])->name('auth.attempt');
@@ -38,9 +32,18 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', fn () => view('dashboard.index'))->name('dashboard');
 
     Route::get('/dashboard/tickets', function () {
-        $tickets = json_decode(file_get_contents(resource_path('mocks/tickets.json')), true);
-        return view('dashboard.tickets', compact('tickets'));
+        $upcoming = Auth::user()->tickets()->where('status', 'confirmed')->with('purchase')->latest()->get();
+        $past     = Auth::user()->tickets()->where('status', 'used')->with('purchase')->latest()->get();
+        return view('dashboard.tickets', compact('upcoming', 'past'));
     })->name('dashboard.tickets');
+
+    // ─── Mapa de asientos (requiere auth: "Comprar entradas" redirige al login si es guest) ───
+    Route::get('/events/{id}/seats', function ($id) {
+        $events = json_decode(file_get_contents(resource_path('mocks/events.json')), true);
+        $event  = collect($events['upcoming'])->firstWhere('id', (int) $id);
+        abort_if(!$event, 404);
+        return view('events.seats', compact('event'));
+    })->name('events.seats');
 
     // ─── Flujo de compra ───
     Route::post('/events/{id}/checkout',          [PurchaseController::class, 'initCheckout'])->name('checkout.init');
