@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PurchaseController;
+use App\Http\Controllers\TicketController;
 
 // ─── Públicas ───
 Route::get('/', fn () => view('home'))->name('home');
@@ -39,4 +41,13 @@ Route::middleware('auth')->group(function () {
         $tickets = json_decode(file_get_contents(resource_path('mocks/tickets.json')), true);
         return view('dashboard.tickets', compact('tickets'));
     })->name('dashboard.tickets');
+
+    // ─── Flujo de compra ───
+    Route::post('/events/{id}/checkout',          [PurchaseController::class, 'initCheckout'])->name('checkout.init');
+    Route::get('/checkout/{token}',               [PurchaseController::class, 'checkout'])->name('checkout');
+    Route::post('/checkout/{token}/confirm',      [PurchaseController::class, 'confirmCheckout'])->name('checkout.confirm');
+    Route::get('/purchase/{reference}/confirmation', [PurchaseController::class, 'confirmation'])->name('purchase.confirmation');
+
+    // ─── QR de ticket ───
+    Route::get('/tickets/{code}/qr', [TicketController::class, 'qr'])->name('tickets.qr');
 });

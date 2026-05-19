@@ -211,16 +211,34 @@
                 </div>
             </div>
 
-            {{-- CTA --}}
-            <button
-                :disabled="selected.length === 0"
-                :class="selected.length > 0
-                    ? 'hover:scale-[1.02] shadow-lg shadow-primary/20 cursor-pointer'
-                    : 'opacity-40 cursor-not-allowed'"
-                class="w-full py-4 bg-primary text-on-primary font-label-lg text-label-lg rounded-full flex items-center justify-center gap-2 transition-all">
-                Continuar
-                <span class="material-symbols-outlined">arrow_forward</span>
-            </button>
+            {{-- CTA — form oculto que serializa los asientos seleccionados --}}
+            <form method="POST" action="{{ route('checkout.init', $event['id']) }}"
+                  @submit.prevent="
+                      $el.querySelector('[name=seats]').value = JSON.stringify(
+                          selected.map(s => ({ row: s.row, num: s.num, section: s.section }))
+                      );
+                      $el.submit();
+                  ">
+                @csrf
+                <input type="hidden" name="seats">
+                <input type="hidden" name="event_title" value="{{ $event['title'] }}">
+                <input type="hidden" name="event_date"  value="{{ $event['dates'][0]['day'] }} de {{ $event['dates'][0]['month'] }} de {{ $event['dates'][0]['year'] ?? date('Y') }}">
+                <input type="hidden" name="event_time"  value="{{ $event['times'][0] }}">
+                <input type="hidden" name="venue"       value="{{ $event['venue'] }}">
+                <input type="hidden" name="city"        value="{{ $event['city'] }}">
+                <input type="hidden" name="price"       value="{{ (int) str_replace('.', '', $event['price']) }}">
+
+                <button
+                    type="submit"
+                    :disabled="selected.length === 0"
+                    :class="selected.length > 0
+                        ? 'hover:scale-[1.02] shadow-lg shadow-primary/20 cursor-pointer'
+                        : 'opacity-40 cursor-not-allowed'"
+                    class="w-full py-4 bg-primary text-on-primary font-label-lg text-label-lg rounded-full flex items-center justify-center gap-2 transition-all">
+                    Continuar
+                    <span class="material-symbols-outlined">arrow_forward</span>
+                </button>
+            </form>
 
             <p class="text-center font-label-sm text-label-sm text-on-surface-variant mt-4 flex items-center justify-center gap-1.5">
                 <span class="material-symbols-outlined" style="font-size: 16px">lock</span>
