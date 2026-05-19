@@ -1,5 +1,5 @@
 # ---------- Stage 1: BUILD ----------
-FROM php:8.4-fpm-alpine AS build
+FROM php:8.4-alpine AS build
 WORKDIR /app
 
 RUN apk add --no-cache git curl unzip nodejs npm libpng-dev libzip-dev oniguruma-dev \
@@ -19,8 +19,11 @@ RUN composer dump-autoload --optimize --no-dev \
 FROM php:8.4-alpine AS runtime
 WORKDIR /var/www/html
 
-RUN apk add --no-cache libpng libzip oniguruma \
-    && docker-php-ext-install pdo pdo_mysql mbstring zip gd
+RUN apk add --no-cache libpng libzip oniguruma
+
+# Copiar extensiones compiladas desde build
+COPY --from=build /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions/
+COPY --from=build /usr/local/etc/php/conf.d/ /usr/local/etc/php/conf.d/
 
 COPY --from=build /app .
 
