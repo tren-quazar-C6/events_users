@@ -1,0 +1,27 @@
+{
+    "name": "Tickify — Tu boletería de bolsillo",
+    "short_name": "Tickify",
+    "description": "Descubre obras de teatro, compra entradas y guarda tus tickets en tu teléfono",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "portrait",
+    "background_color": "#FAF7F2",
+    "theme_color": "#7BB394",
+    "lang": "es",
+    "categories": ["entertainment", "lifestyle"],
+    "icons": [
+        {
+            "src": "/icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/icons/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ]
+}

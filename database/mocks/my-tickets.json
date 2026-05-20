@@ -1,0 +1,38 @@
+[
+    {
+        "code": "TKF-A4F2-9821",
+        "event_title": "El Rey León",
+        "event_slug": "el-rey-leon",
+        "date": "2026-05-23",
+        "time": "20:00",
+        "seat": "Platea 12-A",
+        "price": 120000
+    },
+    {
+        "code": "TKF-7B11-3045",
+        "event_title": "Hamlet",
+        "event_slug": "hamlet",
+        "date": "2026-05-25",
+        "time": "19:30",
+        "seat": "Balcón 4-D",
+        "price": 65000
+    },
+    {
+        "code": "TKF-X932-1167",
+        "event_title": "Stand-up Comedy Night",
+        "event_slug": "stand-up-night",
+        "date": "2026-03-15",
+        "time": "21:00",
+        "seat": "Platea 8-C",
+        "price": 35000
+    },
+    {
+        "code": "TKF-K201-5589",
+        "event_title": "Cantando bajo la lluvia",
+        "event_slug": "cantando-bajo-la-lluvia",
+        "date": "2026-02-10",
+        "time": "20:00",
+        "seat": "Platea 5-B",
+        "price": 85000
+    }
+]

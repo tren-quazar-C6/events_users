@@ -9,7 +9,7 @@
 | Reactividad de UI | Alpine.js | 3.x (incluido vía Livewire) |
 | Estilos | Tailwind CSS | 4.0 (Vite 8) |
 | Motor de plantillas | Blade | — |
-| Base de datos | SQLite | local |
+| Base de datos | MySQL | 8.x (puerto 3307) |
 | Iconografía | Material Symbols Outlined | Google CDN |
 | Fuentes | Bricolage Grotesque, Plus Jakarta Sans | Google Fonts |
 
@@ -18,15 +18,27 @@
 ```
 events_users/
 ├── app/
-│   └── Http/
-│       └── Controllers/
-│           └── AuthController.php       # Registro, login y logout
+│   ├── Http/
+│   │   └── Controllers/
+│   │       ├── AuthController.php       # Registro, login y logout
+│   │       ├── PurchaseController.php   # Flujo de compra completo (4 métodos)
+│   │       └── TicketController.php     # Genera QR en SVG
+│   ├── Models/
+│   │   ├── User.php                     # hasMany → Purchase, Ticket
+│   │   ├── Purchase.php                 # Auto-genera ORD-XXXXXX en booted()
+│   │   └── Ticket.php                   # Auto-genera BTC-XXXXXX en booted()
+│   └── Mail/
+│       └── PurchaseConfirmation.php     # Mailable de confirmación de compra
+├── database/
+│   └── migrations/
+│       ├── *_create_purchases_table.php
+│       └── *_create_tickets_table.php
 ├── resources/
 │   ├── css/
 │   │   └── app.css                      # Tokens del design system (Tailwind @theme)
 │   ├── js/
 │   │   └── app.js
-│   ├── mocks/                           # Datos estáticos JSON
+│   ├── mocks/                           # Datos estáticos JSON (catálogo y eventos)
 │   │   ├── events.json
 │   │   ├── tickets.json
 │   │   ├── user.json
@@ -43,9 +55,14 @@ events_users/
 │       ├── events/
 │       │   ├── show.blade.php
 │       │   └── seats.blade.php
+│       ├── checkout/
+│       │   ├── index.blade.php          # Resumen de compra + form pago mock
+│       │   └── confirmation.blade.php   # Tickets con QR codes
+│       ├── emails/
+│       │   └── purchase-confirmation.blade.php
 │       ├── dashboard/
 │       │   ├── index.blade.php
-│       │   └── tickets.blade.php
+│       │   └── tickets.blade.php        # Lee de BD real (purchases + tickets)
 │       ├── catalog.blade.php
 │       └── home.blade.php
 ├── routes/
@@ -53,7 +70,7 @@ events_users/
 └── docs/                                # Esta carpeta
 ```
 
-## Flujo de datos (mock-first)
+## Flujo de datos
 
 ```
 Solicitud HTTP
@@ -61,7 +78,8 @@ Solicitud HTTP
      ▼
 routes/web.php  →  closure / controller
      │
-     ├─ Lee resources/mocks/*.json con json_decode()
+     ├─ Catálogo / eventos: lee resources/mocks/events.json (mock)
+     ├─ Compra / tickets:   Eloquent ORM → MySQL (BD real)
      ├─ Pasa variables al view con compact()
      └─ Retorna Blade view
             │
@@ -86,4 +104,25 @@ Gestionada por `AuthController` con sesiones de Laravel. La tabla `users` existe
 
 ## Base de datos
 
-SQLite local (`.env` → `DB_CONNECTION=sqlite`). Sesiones, caché y cola también se almacenan en la base de datos (`SESSION_DRIVER=database`, etc.). Solo la tabla `users` es relevante en el estado actual.
+MySQL 8.x corriendo en el contenedor de `events_infrastructure` (puerto **3307** en el host).
+
+Configuración en `.env`:
+```ini
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3307
+DB_DATABASE=events
+DB_USERNAME=users_app
+DB_PASSWORD=cambiame_users
+```
+
+Tablas relevantes:
+
+| Tabla | Origen | Descripción |
+|-------|--------|-------------|
+| `users` | migración Laravel estándar | Usuarios registrados |
+| `sessions` | migración Laravel estándar | Sesiones HTTP |
+| `purchases` | `*_create_purchases_table.php` | Compras confirmadas (ORD-XXXXXX) |
+| `tickets` | `*_create_tickets_table.php` | Tickets individuales por asiento (BTC-XXXXXX) |
+
+El catálogo de eventos y las fichas de evento aún leen de `resources/mocks/events.json`; la migración a un modelo `Event` con tabla propia está pendiente.

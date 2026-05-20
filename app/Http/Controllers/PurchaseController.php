@@ -18,7 +18,7 @@ class PurchaseController extends Controller
      * Recibe los asientos seleccionados desde el mapa, guarda en sesión y
      * redirige al resumen de checkout.
      */
-    public function initCheckout(Request $request, int $id): RedirectResponse
+    public function initCheckout(Request $request, string $slug): RedirectResponse
     {
         $seats = json_decode($request->input('seats', '[]'), true);
 
@@ -26,10 +26,14 @@ class PurchaseController extends Controller
             return back()->with('error', 'Selecciona al menos un asiento.');
         }
 
+        $events  = json_decode(file_get_contents(database_path('mocks/events.json')), true);
+        $event   = collect($events)->firstWhere('slug', $slug);
+        $eventId = $event['id'] ?? 0;
+
         $token = Str::random(40);
 
         session(["checkout:{$token}" => [
-            'event_id'    => $id,
+            'event_id'    => $eventId,
             'event_title' => $request->input('event_title'),
             'event_date'  => $request->input('event_date'),
             'event_time'  => $request->input('event_time'),

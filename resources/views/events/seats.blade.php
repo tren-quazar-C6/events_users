@@ -9,7 +9,7 @@
     <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
 
         <div>
-            <a href="{{ route('events.show', $event['id']) }}"
+            <a href="{{ route('events.show', $event['slug']) }}"
                class="inline-flex items-center gap-1 text-on-surface-variant font-label-lg text-label-lg hover:text-primary transition-colors mb-3 w-fit">
                 <span class="material-symbols-outlined" style="font-size: 18px">arrow_back</span>
                 Volver al evento
@@ -22,7 +22,7 @@
             <h1 class="font-headline-lg text-headline-lg text-on-surface">{{ $event['title'] }}</h1>
             <p class="font-body-md text-body-md text-on-surface-variant mt-2 flex flex-wrap items-center gap-2">
                 <span class="material-symbols-outlined" style="font-size: 20px">calendar_today</span>
-                {{ $event['dates'][0]['dow'] }} {{ $event['dates'][0]['day'] }} de {{ $event['dates'][0]['month'] }} · {{ $event['times'][0] }}h
+                {{ \Carbon\Carbon::parse($event['showtimes'][0]['date'])->translatedFormat('l j \\d\\e F') }} · {{ $event['showtimes'][0]['time'] }}h
                 <span class="text-outline-variant mx-1">|</span>
                 <span class="material-symbols-outlined" style="font-size: 20px">location_on</span>
                 {{ $event['venue'] }}
@@ -81,7 +81,7 @@
                 {n:9,s:'o'},{n:10,s:'o'},{n:11,s:'o'},{n:12,s:'o'}
             ]}
         ],
-        pricePerSeat: {{ (int) str_replace('.', '', $event['price']) }},
+        pricePerSeat: {{ $event['price_from'] }},
         fee: 3500,
         toggleSeat(rowIdx, seatIdx) {
             const seat = this.rows[rowIdx].seats[seatIdx];
@@ -212,7 +212,7 @@
             </div>
 
             {{-- CTA — form oculto que serializa los asientos seleccionados --}}
-            <form method="POST" action="{{ route('checkout.init', $event['id']) }}"
+            <form method="POST" action="{{ route('checkout.init', $event['slug']) }}"
                   @submit.prevent="
                       $el.querySelector('[name=seats]').value = JSON.stringify(
                           selected.map(s => ({ row: s.row, num: s.num, section: s.section }))
@@ -222,11 +222,11 @@
                 @csrf
                 <input type="hidden" name="seats">
                 <input type="hidden" name="event_title" value="{{ $event['title'] }}">
-                <input type="hidden" name="event_date"  value="{{ $event['dates'][0]['day'] }} de {{ $event['dates'][0]['month'] }} de {{ $event['dates'][0]['year'] ?? date('Y') }}">
-                <input type="hidden" name="event_time"  value="{{ $event['times'][0] }}">
+                <input type="hidden" name="event_date"  value="{{ \Carbon\Carbon::parse($event['showtimes'][0]['date'])->translatedFormat('j \\d\\e F \\d\\e Y') }}">
+                <input type="hidden" name="event_time"  value="{{ $event['showtimes'][0]['time'] }}">
                 <input type="hidden" name="venue"       value="{{ $event['venue'] }}">
                 <input type="hidden" name="city"        value="{{ $event['city'] }}">
-                <input type="hidden" name="price"       value="{{ (int) str_replace('.', '', $event['price']) }}">
+                <input type="hidden" name="price"       value="{{ $event['price_from'] }}">
 
                 <button
                     type="submit"

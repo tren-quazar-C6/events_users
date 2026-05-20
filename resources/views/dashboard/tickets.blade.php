@@ -1,8 +1,8 @@
-@extends('layouts.app')
+@extends('layouts.dashboard')
 
 @section('title', 'Mis Tickets')
 
-@section('content')
+@section('dashboard-content')
 <div
     x-data="{
         tab: 'upcoming',
@@ -11,76 +11,75 @@
         open(t) { this.ticket = t; this.showQR = true; },
         close() { this.showQR = false; this.ticket = null; }
     }"
-    class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-16 py-12"
 >
 
     {{-- ── Encabezado + tabs ───────────────────────────────── --}}
     <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
         <div>
-            <h1 class="font-headline-lg text-headline-lg text-on-surface mb-1">Mis tickets</h1>
-            <p class="font-body-md text-body-md text-on-surface-variant">
-                Gestiona tus próximas funciones y revisa tu historial.
-            </p>
+            <h1 class="font-display text-4xl text-sage-dark mb-1">Mis tickets</h1>
+            <p class="text-sage-dark/70">Gestiona tus próximas funciones y revisa tu historial.</p>
         </div>
 
-        <div class="flex gap-1 p-1 bg-surface-container-low rounded-xl self-start">
+        <div class="flex gap-1 p-1 bg-white rounded-card shadow-soft self-start">
             <button
                 @click="tab = 'upcoming'"
                 :class="tab === 'upcoming'
-                    ? 'bg-primary-container text-on-primary-container shadow-sm'
-                    : 'text-on-surface-variant hover:bg-surface-container-high'"
-                class="px-6 py-2 rounded-lg font-label-lg text-label-lg transition-all">
+                    ? 'bg-sage text-white shadow-sm'
+                    : 'text-sage-dark/60 hover:bg-cream'"
+                class="px-6 py-2 rounded-btn text-sm font-semibold transition-all">
                 Próximos
                 @if($upcoming->count() > 0)
-                    <span class="ml-1.5 bg-primary text-on-primary text-xs px-2 py-0.5 rounded-full">{{ $upcoming->count() }}</span>
+                    <span class="ml-1.5 bg-white/20 text-xs px-2 py-0.5 rounded-full">{{ $upcoming->count() }}</span>
                 @endif
             </button>
             <button
                 @click="tab = 'past'"
                 :class="tab === 'past'
-                    ? 'bg-primary-container text-on-primary-container shadow-sm'
-                    : 'text-on-surface-variant hover:bg-surface-container-high'"
-                class="px-6 py-2 rounded-lg font-label-lg text-label-lg transition-all">
+                    ? 'bg-sage text-white shadow-sm'
+                    : 'text-sage-dark/60 hover:bg-cream'"
+                class="px-6 py-2 rounded-btn text-sm font-semibold transition-all">
                 Pasados
             </button>
         </div>
     </div>
 
     {{-- ── PRÓXIMOS ─────────────────────────────────────────── --}}
-    <div x-show="tab === 'upcoming'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div x-show="tab === 'upcoming'" class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
         @forelse ($upcoming as $ticket)
-        <article class="group bg-surface-container-lowest rounded-xl overflow-hidden shadow-md shadow-on-surface/5 border border-surface-container hover:-translate-y-1 transition-all duration-300">
+        <article class="bg-white rounded-card shadow-soft overflow-hidden hover:-translate-y-1 transition-all duration-300">
 
-            <div class="h-48 bg-secondary-container flex items-center justify-center relative">
-                <span class="material-symbols-outlined text-primary/30" style="font-size: 56px">theater_comedy</span>
-                <span class="absolute top-4 left-4 flex items-center gap-1.5 bg-tertiary-container text-on-tertiary-container px-3 py-1 rounded-full font-label-sm text-label-sm">
-                    <span class="w-2 h-2 rounded-full bg-tertiary inline-block animate-pulse"></span>
+            <div class="h-40 bg-sage-light flex items-center justify-center relative">
+                <svg class="w-12 h-12 text-sage/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                </svg>
+                <span class="absolute top-3 left-3 flex items-center gap-1.5 bg-white text-sage text-xs font-semibold px-3 py-1 rounded-full shadow-soft">
+                    <span class="w-1.5 h-1.5 rounded-full bg-sage inline-block animate-pulse"></span>
                     Activo
                 </span>
             </div>
 
-            <div class="p-6">
-                <h3 class="font-headline-sm text-headline-sm text-on-surface mb-1 leading-snug line-clamp-2">
+            <div class="p-5">
+                <h3 class="font-display text-xl text-sage-dark mb-1 leading-snug line-clamp-2">
                     {{ $ticket->event_title }}
                 </h3>
-                <p class="font-label-sm text-label-sm text-on-surface-variant mb-4 tracking-widest font-mono">
+                <p class="text-xs text-sage-dark/50 mb-4 tracking-widest font-mono">
                     {{ $ticket->unique_code }}
                 </p>
 
-                <div class="space-y-2 mb-6">
-                    <div class="flex items-center gap-2 text-on-surface-variant font-body-md text-body-md">
-                        <span class="material-symbols-outlined text-primary" style="font-size:18px">calendar_today</span>
+                <div class="space-y-1.5 mb-5 text-sm text-sage-dark/70">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-sage shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                         {{ $ticket->event_date }} · {{ $ticket->event_time }}h
                     </div>
-                    <div class="flex items-center gap-2 text-on-surface-variant font-body-md text-body-md">
-                        <span class="material-symbols-outlined text-primary" style="font-size:18px">location_on</span>
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-sage shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                         {{ $ticket->venue }}
                     </div>
-                    <div class="flex items-center gap-2 text-on-surface-variant font-body-md text-body-md">
-                        <span class="material-symbols-outlined text-primary" style="font-size:18px">event_seat</span>
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-sage shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                         Fila {{ $ticket->seat_row }}, Asiento {{ $ticket->seat_number }}
-                        <span class="text-on-surface-variant/50">· {{ $ticket->seat_section }}</span>
+                        <span class="text-sage-dark/40">· {{ $ticket->seat_section }}</span>
                     </div>
                 </div>
 
@@ -97,30 +96,28 @@
                         'status'  => $ticket->status,
                         'qr_url'  => route('tickets.qr', $ticket->unique_code),
                     ]) }})"
-                    class="w-full py-3 bg-primary-container text-on-primary-container font-label-lg text-label-lg rounded-lg flex items-center justify-center gap-2 hover:brightness-95 transition-all shadow-sm cursor-pointer">
-                    <span class="material-symbols-outlined" style="font-size:18px">qr_code_2</span>
+                    class="w-full py-2.5 bg-sage text-white text-sm font-semibold rounded-btn flex items-center justify-center gap-2 hover:bg-sage-dark transition-all cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.24M16.24 12l1.41 1.41M12 16.24V12m0 4.24L10.59 14.83"/></svg>
                     Ver QR
                 </button>
             </div>
         </article>
         @empty
-        <div class="col-span-full py-16 flex flex-col items-center text-on-surface-variant">
-            <span class="material-symbols-outlined" style="font-size: 56px; opacity: 0.3">confirmation_number</span>
-            <p class="mt-3 font-body-md text-body-md">No tienes tickets próximos.</p>
+        <div class="col-span-full py-16 flex flex-col items-center text-sage-dark/40">
+            <svg class="w-14 h-14 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
+            <p class="text-sm">No tienes tickets próximos.</p>
         </div>
         @endforelse
 
         {{-- Tarjeta descubrir --}}
-        <div class="bg-surface-container-low/50 rounded-xl border-2 border-dashed border-outline-variant flex flex-col items-center justify-center p-8 text-center min-h-[380px]">
-            <div class="w-16 h-16 bg-surface-container-high rounded-full flex items-center justify-center mb-4">
-                <span class="material-symbols-outlined text-outline" style="font-size: 32px">add_circle</span>
+        <div class="bg-cream rounded-card border-2 border-dashed border-sage/20 flex flex-col items-center justify-center p-8 text-center min-h-[320px]">
+            <div class="w-14 h-14 bg-white rounded-full shadow-soft flex items-center justify-center mb-4">
+                <svg class="w-6 h-6 text-sage" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
             </div>
-            <h4 class="font-headline-md text-headline-md text-on-surface mb-2">¿Buscas algo nuevo?</h4>
-            <p class="font-body-md text-body-md text-on-surface-variant mb-6 max-w-[220px]">
-                Explora las mejores obras y funciones disponibles en cartelera.
-            </p>
+            <h4 class="font-display text-xl text-sage-dark mb-2">¿Buscas algo nuevo?</h4>
+            <p class="text-sm text-sage-dark/60 mb-6 max-w-[200px]">Explora las mejores obras y funciones disponibles.</p>
             <a href="{{ route('catalog') }}"
-               class="px-8 py-2 border-2 border-primary text-primary font-label-lg text-label-lg rounded-lg hover:bg-primary hover:text-on-primary transition-all">
+               class="px-6 py-2 border-2 border-sage text-sage text-sm font-semibold rounded-btn hover:bg-sage hover:text-white transition-all">
                 Explorar funciones
             </a>
         </div>
@@ -130,42 +127,29 @@
     <div x-show="tab === 'past'" x-cloak>
 
         @if ($past->count() > 0)
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             @foreach ($past as $ticket)
-            <article class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-md shadow-on-surface/5 border border-surface-container opacity-70">
-
-                <div class="h-48 bg-surface-container-high flex items-center justify-center relative grayscale">
-                    <span class="material-symbols-outlined text-outline/40" style="font-size: 56px">theater_comedy</span>
-                    <span class="absolute top-4 left-4 flex items-center gap-1.5 bg-surface-container text-on-surface-variant px-3 py-1 rounded-full font-label-sm text-label-sm">
-                        <span class="material-symbols-outlined" style="font-size:14px">check_circle</span>
+            <article class="bg-white rounded-card shadow-soft overflow-hidden opacity-70">
+                <div class="h-40 bg-sage-light/30 flex items-center justify-center relative grayscale">
+                    <svg class="w-12 h-12 text-sage-dark/20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
+                    <span class="absolute top-3 left-3 flex items-center gap-1.5 bg-white/80 text-sage-dark/60 text-xs font-medium px-3 py-1 rounded-full">
+                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                         Usado
                     </span>
                 </div>
-
-                <div class="p-6">
-                    <h3 class="font-headline-sm text-headline-sm text-on-surface mb-1 leading-snug line-clamp-2">
-                        {{ $ticket->event_title }}
-                    </h3>
-                    <p class="font-label-sm text-label-sm text-on-surface-variant mb-4 tracking-widest font-mono">
-                        {{ $ticket->unique_code }}
-                    </p>
-
-                    <div class="space-y-2 mb-6">
-                        <div class="flex items-center gap-2 text-on-surface-variant/60 font-body-md text-body-md">
-                            <span class="material-symbols-outlined" style="font-size:18px">calendar_today</span>
+                <div class="p-5">
+                    <h3 class="font-display text-xl text-sage-dark mb-1 leading-snug line-clamp-2">{{ $ticket->event_title }}</h3>
+                    <p class="text-xs text-sage-dark/50 mb-4 tracking-widest font-mono">{{ $ticket->unique_code }}</p>
+                    <div class="space-y-1.5 mb-5 text-sm text-sage-dark/50">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                             {{ $ticket->event_date }} · {{ $ticket->event_time }}h
                         </div>
-                        <div class="flex items-center gap-2 text-on-surface-variant/60 font-body-md text-body-md">
-                            <span class="material-symbols-outlined" style="font-size:18px">location_on</span>
+                        <div class="flex items-center gap-2">
+                            <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                             {{ $ticket->venue }}
                         </div>
-                        <div class="flex items-center gap-2 text-on-surface-variant/60 font-body-md text-body-md">
-                            <span class="material-symbols-outlined" style="font-size:18px">event_seat</span>
-                            Fila {{ $ticket->seat_row }}, Asiento {{ $ticket->seat_number }}
-                            <span class="text-on-surface-variant/40">· {{ $ticket->seat_section }}</span>
-                        </div>
                     </div>
-
                     <button
                         @click="open({{ Js::from([
                             'code'    => $ticket->unique_code,
@@ -179,27 +163,20 @@
                             'status'  => $ticket->status,
                             'qr_url'  => route('tickets.qr', $ticket->unique_code),
                         ]) }})"
-                        class="w-full py-3 bg-surface-container text-on-surface-variant font-label-lg text-label-lg rounded-lg flex items-center justify-center gap-2 hover:bg-surface-container-high transition-all cursor-pointer">
-                        <span class="material-symbols-outlined" style="font-size:18px">qr_code_2</span>
+                        class="w-full py-2.5 bg-cream text-sage-dark/60 text-sm font-semibold rounded-btn flex items-center justify-center gap-2 hover:bg-sage-light transition-all cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.24M16.24 12l1.41 1.41M12 16.24V12m0 4.24L10.59 14.83"/></svg>
                         Ver QR
                     </button>
                 </div>
             </article>
             @endforeach
         </div>
-
         @else
-        <div class="rounded-3xl px-8 py-20 flex flex-col items-center justify-center text-center border border-surface-container bg-surface-container-low">
-            <div class="relative mb-8">
-                <span class="material-symbols-outlined text-primary/20" style="font-size: 80px">confirmation_number</span>
-                <span class="material-symbols-outlined text-primary/40 absolute -bottom-2 -right-2" style="font-size: 40px">history</span>
-            </div>
-            <h3 class="font-headline-md text-headline-md text-on-surface mb-3">No tienes tickets pasados</h3>
-            <p class="font-body-md text-body-md text-on-surface-variant max-w-md">
-                Tu historial de funciones aparecerá aquí una vez que hayas disfrutado de tus espectáculos.
-            </p>
-            <a href="{{ route('catalog') }}"
-               class="mt-10 px-8 py-3 bg-secondary text-on-secondary font-label-lg text-label-lg rounded-lg hover:brightness-110 transition-all">
+        <div class="rounded-card bg-cream p-16 flex flex-col items-center text-center border border-sage/10">
+            <svg class="w-16 h-16 text-sage/20 mb-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
+            <h3 class="font-display text-2xl text-sage-dark mb-2">No tienes tickets pasados</h3>
+            <p class="text-sm text-sage-dark/60 max-w-xs">Tu historial de funciones aparecerá aquí una vez que hayas disfrutado de tus espectáculos.</p>
+            <a href="{{ route('catalog') }}" class="mt-8 px-8 py-2.5 bg-sage text-white text-sm font-semibold rounded-btn hover:bg-sage-dark transition-all">
                 Ver recomendaciones
             </a>
         </div>
@@ -218,7 +195,7 @@
         x-transition:leave-end="opacity-0"
         @keydown.escape.window="close()"
         @click.self="close()"
-        class="fixed inset-0 z-50 bg-on-surface/50 backdrop-blur-sm flex items-center justify-center p-4">
+        class="fixed inset-0 z-50 bg-sage-dark/50 backdrop-blur-sm flex items-center justify-center p-4">
 
         <div
             x-show="showQR"
@@ -228,21 +205,20 @@
             x-transition:leave="transition ease-in duration-150"
             x-transition:leave-start="opacity-100 scale-100"
             x-transition:leave-end="opacity-0 scale-95"
-            class="bg-surface-container-lowest rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden">
+            class="bg-white rounded-card shadow-soft w-full max-w-sm overflow-hidden">
 
-            <div class="flex items-start justify-between p-6 border-b border-secondary-container/20">
+            <div class="flex items-start justify-between p-6 border-b border-sage/10">
                 <div>
-                    <p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Entrada</p>
-                    <h2 class="font-headline-sm text-headline-sm text-on-surface leading-snug" x-text="ticket?.title"></h2>
+                    <p class="text-xs text-sage-dark/50 uppercase tracking-wider mb-1">Entrada</p>
+                    <h2 class="font-display text-xl text-sage-dark leading-snug" x-text="ticket?.title"></h2>
                 </div>
-                <button @click="close()" class="text-on-surface-variant hover:text-on-surface transition-colors ml-4 mt-0.5 cursor-pointer">
-                    <span class="material-symbols-outlined">close</span>
+                <button @click="close()" class="text-sage-dark/40 hover:text-sage-dark transition-colors ml-4 cursor-pointer">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
 
             <div class="p-6 flex flex-col items-center gap-5">
-
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-secondary-container/20">
+                <div class="bg-cream p-4 rounded-card border border-sage/10">
                     <template x-if="ticket">
                         <img :src="ticket.qr_url" :alt="'QR ' + ticket.code" class="w-44 h-44">
                     </template>
@@ -250,31 +226,31 @@
 
                 <div class="flex items-center gap-3 flex-wrap justify-center">
                     <template x-if="ticket?.status === 'confirmed'">
-                        <span class="flex items-center gap-1.5 bg-tertiary-container text-on-tertiary-container px-4 py-1.5 rounded-full font-label-md text-label-md">
-                            <span class="w-2 h-2 rounded-full bg-tertiary inline-block animate-pulse"></span>
+                        <span class="flex items-center gap-1.5 bg-sage-light text-sage-dark text-xs font-semibold px-4 py-1.5 rounded-full">
+                            <span class="w-2 h-2 rounded-full bg-sage inline-block animate-pulse"></span>
                             Activo
                         </span>
                     </template>
                     <template x-if="ticket?.status === 'used'">
-                        <span class="flex items-center gap-1.5 bg-surface-container text-on-surface-variant px-4 py-1.5 rounded-full font-label-md text-label-md">
-                            <span class="material-symbols-outlined" style="font-size:14px">check_circle</span>
+                        <span class="flex items-center gap-1.5 bg-cream text-sage-dark/60 text-xs font-medium px-4 py-1.5 rounded-full border border-sage/10">
+                            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                             Usado
                         </span>
                     </template>
-                    <span class="font-mono font-label-lg text-label-lg text-primary tracking-widest" x-text="ticket?.code"></span>
+                    <span class="font-mono text-sm text-sage tracking-widest font-semibold" x-text="ticket?.code"></span>
                 </div>
 
-                <div class="w-full space-y-2 text-on-surface-variant font-body-md text-body-md">
+                <div class="w-full space-y-2 text-sm text-sage-dark/70">
                     <div class="flex items-center gap-2">
-                        <span class="material-symbols-outlined text-primary" style="font-size:16px">calendar_today</span>
+                        <svg class="w-4 h-4 text-sage shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                         <span x-text="ticket?.date + ' · ' + ticket?.time + 'h'"></span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <span class="material-symbols-outlined text-primary" style="font-size:16px">location_on</span>
+                        <svg class="w-4 h-4 text-sage shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                         <span x-text="ticket?.venue"></span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <span class="material-symbols-outlined text-primary" style="font-size:16px">event_seat</span>
+                        <svg class="w-4 h-4 text-sage shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                         <span x-text="'Fila ' + ticket?.row + ', Asiento ' + ticket?.number + ' · ' + ticket?.section"></span>
                     </div>
                 </div>
@@ -282,7 +258,7 @@
 
             <div class="px-6 pb-6">
                 <button @click="close()"
-                        class="w-full py-3 bg-surface-container text-on-surface font-label-lg text-label-lg rounded-xl hover:bg-surface-container-high transition-all cursor-pointer">
+                        class="w-full py-3 bg-cream text-sage-dark text-sm font-semibold rounded-btn hover:bg-sage-light transition-all cursor-pointer">
                     Cerrar
                 </button>
             </div>

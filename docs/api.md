@@ -1,6 +1,6 @@
 # API interna — events_users
 
-Rutas de API consumidas por otros microservicios del sistema. No están pensadas para el navegador ni para usuarios finales.
+Rutas de API consumidas por otros microservicios del sistema.
 
 ## Autenticación
 
@@ -129,11 +129,11 @@ builder.Services.AddHttpClient();
 
 ## Archivos relevantes en events_users
 
-| Archivo | Responsabilidad |
-|---------|----------------|
-| `app/Http/Middleware/VerifyApiSecret.php` | Valida el Bearer token en cada request de API |
-| `app/Http/Controllers/Api/TicketController.php` | Lógica de `markAsUsed` |
+| Archivo | Responsabilidad                                     |
+|---------|-----------------------------------------------------|
+| `app/Http/Middleware/VerifyApiSecret.php` | Valida el Bearer token en cada request de API       |
+| `app/Http/Controllers/Api/TicketController.php` | Lógica de `markAsUsed`                              |
 | `routes/api.php` | Registro de la ruta `PATCH /api/tickets/{code}/use` |
-| `config/services.php` | Expone `TICKETS_API_SECRET` desde `.env` |
-| `.env` | Contiene el valor real del token (no commitear) |
-| `.env.example` | Placeholder vacío para nuevos entornos |
+| `config/services.php` | Expone `TICKETS_API_SECRET` desde `.env`            |
+| `.env` | Contiene el valor real del token (fb)               |
+| `.env.example` | Placeholder vacío para nuevos entornos              |

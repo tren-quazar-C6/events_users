@@ -1,0 +1,123 @@
+[
+    {
+        "id": 1,
+        "slug": "el-rey-leon",
+        "title": "El Rey León",
+        "category": "Musical",
+        "synopsis": "El épico musical de Disney llega a Medellín con su impresionante puesta en escena, máscaras icónicas y una banda sonora que ha conquistado al mundo.",
+        "poster_color": "#F4B895",
+        "price_from": 120000,
+        "venue": "Teatro Metropolitano",
+        "city": "Medellín",
+        "showtimes": [
+            { "date": "2026-05-22", "time": "20:00" },
+            { "date": "2026-05-23", "time": "16:00" },
+            { "date": "2026-05-23", "time": "20:00" }
+        ]
+    },
+    {
+        "id": 2,
+        "slug": "hamlet",
+        "title": "Hamlet",
+        "category": "Drama",
+        "synopsis": "La obra cumbre de Shakespeare en una versión íntima y contemporánea. Una exploración del duelo, la venganza y la duda existencial.",
+        "poster_color": "#2D4A3E",
+        "price_from": 65000,
+        "venue": "Teatro Metropolitano",
+        "city": "Medellín",
+        "showtimes": [
+            { "date": "2026-05-24", "time": "19:30" },
+            { "date": "2026-05-25", "time": "19:30" }
+        ]
+    },
+    {
+        "id": 3,
+        "slug": "madagascar-live",
+        "title": "Madagascar Live!",
+        "category": "Infantil",
+        "synopsis": "Alex, Marty, Gloria y Melman llegan en vivo para una aventura llena de música, baile y diversión para toda la familia.",
+        "poster_color": "#C4E0D0",
+        "price_from": 45000,
+        "venue": "Teatro Metropolitano",
+        "city": "Medellín",
+        "showtimes": [
+            { "date": "2026-05-21", "time": "11:00" },
+            { "date": "2026-05-21", "time": "15:00" },
+            { "date": "2026-05-22", "time": "11:00" }
+        ]
+    },
+    {
+        "id": 4,
+        "slug": "stand-up-night",
+        "title": "Stand-up Comedy Night",
+        "category": "Comedia",
+        "synopsis": "Los mejores comediantes paisas en una noche de risas garantizadas. No apta para amargados.",
+        "poster_color": "#E89B8C",
+        "price_from": 35000,
+        "venue": "Teatro Metropolitano",
+        "city": "Medellín",
+        "showtimes": [
+            { "date": "2026-05-23", "time": "21:00" }
+        ]
+    },
+    {
+        "id": 5,
+        "slug": "bernarda-alba",
+        "title": "La Casa de Bernarda Alba",
+        "category": "Drama",
+        "synopsis": "Lorca en su máxima expresión. Una madre, cinco hijas, una casa convertida en cárcel. Pasiones que arden bajo el luto.",
+        "poster_color": "#7BB394",
+        "price_from": 55000,
+        "venue": "Teatro Metropolitano",
+        "city": "Medellín",
+        "showtimes": [
+            { "date": "2026-05-25", "time": "20:00" },
+            { "date": "2026-05-26", "time": "20:00" }
+        ]
+    },
+    {
+        "id": 6,
+        "slug": "chicago",
+        "title": "Chicago",
+        "category": "Musical",
+        "synopsis": "Jazz, asesinato y celebridad. El musical de Broadway sobre la fama y el escándalo de los años veinte.",
+        "poster_color": "#2D4A3E",
+        "price_from": 95000,
+        "venue": "Teatro Metropolitano",
+        "city": "Medellín",
+        "showtimes": [
+            { "date": "2026-05-27", "time": "20:00" },
+            { "date": "2026-05-28", "time": "20:00" }
+        ]
+    },
+    {
+        "id": 7,
+        "slug": "mago-de-oz",
+        "title": "El Mago de Oz",
+        "category": "Infantil",
+        "synopsis": "Dorothy y sus amigos en una nueva aventura por el camino amarillo. Música, color y mensaje de amistad para los más chicos.",
+        "poster_color": "#F4B895",
+        "price_from": 40000,
+        "venue": "Teatro Metropolitano",
+        "city": "Medellín",
+        "showtimes": [
+            { "date": "2026-05-29", "time": "11:00" },
+            { "date": "2026-05-29", "time": "15:00" }
+        ]
+    },
+    {
+        "id": 8,
+        "slug": "improvisacion-total",
+        "title": "Improvisación Total",
+        "category": "Comedia",
+        "synopsis": "Show de improvisación 100% en vivo. El público propone, los actores ejecutan. Cada función es única e irrepetible.",
+        "poster_color": "#C4E0D0",
+        "price_from": 30000,
+        "venue": "Teatro Metropolitano",
+        "city": "Medellín",
+        "showtimes": [
+            { "date": "2026-05-24", "time": "21:00" },
+            { "date": "2026-05-31", "time": "21:00" }
+        ]
+    }
+]

@@ -16,7 +16,8 @@ Follow these steps exactly:
    feat: <what changed in one short sentence>
    ```
    - The subject line must be under 72 characters.
-   - No body, no co-author lines unless the user asks.
+   - No scope (no `feat(something):`). Just `feat:`.
+   - No body. Never add Co-Authored-By, co-author lines, or any Claude signature. Never.
 5. Commit: `git commit -m "feat: <message>"`
 6. Push to remote: `git push -u origin <branch-name>`
 7. Report the branch name and commit message to the user in one line.
