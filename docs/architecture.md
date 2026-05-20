@@ -6,12 +6,12 @@
 |------|-----------|---------|
 | Framework backend | Laravel | 13.8 |
 | Componentes reactivos | Livewire | 3.6.4 |
-| Reactividad de UI | Alpine.js | 3.x (incluido vía Livewire) |
+| Reactividad de UI | Alpine.js | 3.x (vía npm + importado en app.js) |
 | Estilos | Tailwind CSS | 4.0 (Vite 8) |
 | Motor de plantillas | Blade | — |
 | Base de datos | MySQL | 8.x (puerto 3307) |
-| Iconografía | Material Symbols Outlined | Google CDN |
-| Fuentes | Bricolage Grotesque, Plus Jakarta Sans | Google Fonts |
+| Tipografías | DM Sans, Fraunces | Google Fonts |
+| PWA | manifest.json + Service Worker | ver `docs/pwa.md` |
 
 ## Estructura de carpetas relevante
 

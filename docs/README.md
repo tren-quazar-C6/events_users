@@ -14,6 +14,7 @@ Flujo de compra completo implementado con base de datos MySQL real. El catálogo
 |-----------|-----------|
 | [`architecture.md`](./architecture.md) | Stack técnico, estructura de carpetas y flujo de datos |
 | [`api.md`](./api.md) | API interna consumida por otros microservicios |
+| [`pwa.md`](./pwa.md) | PWA: manifest, service worker, estrategia de caché y versioning |
 | [`design-system.md`](./design-system.md) | Tokens de color, tipografía y convenciones de estilo |
 | [`routes.md`](./routes.md) | Tabla de rutas registradas |
 | [`modules/layout.md`](./modules/layout.md) | Layout principal, navbar y footer |
