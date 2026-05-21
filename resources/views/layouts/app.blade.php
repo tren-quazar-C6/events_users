@@ -27,8 +27,15 @@
         @yield('content')
     </main>
 
+    {{-- @include('partials.footer')
+
+    @stack('scripts') --}}
+    
     @include('partials.footer')
 
-    @stack('scripts')
-</body>
+        {{-- Bottom navigation para móvil (PWA) --}}
+        @include('partials.bottom-nav')
+
+        @stack('scripts')
+    </body>
 </html>

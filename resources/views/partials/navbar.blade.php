@@ -1,4 +1,4 @@
-<nav class="bg-white shadow-soft sticky top-0 z-50" x-data="{ mobileOpen: false }">
+<nav class="bg-white shadow-soft sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
 
@@ -7,7 +7,7 @@
                 Tickify
             </a>
 
-            {{-- Nav desktop --}}
+            {{-- Nav desktop (oculto en móvil — la bottom nav lo reemplaza) --}}
             <div class="hidden md:flex items-center gap-8">
                 <a href="{{ route('home') }}" class="text-sage-dark/80 hover:text-sage transition">Inicio</a>
                 <a href="{{ route('catalog') }}" class="text-sage-dark/80 hover:text-sage transition">Catálogo</a>
@@ -42,28 +42,6 @@
                 @endauth
             </div>
 
-            {{-- Botón hamburguesa mobile --}}
-            <button @click="mobileOpen = !mobileOpen" class="md:hidden">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                </svg>
-            </button>
-        </div>
-
-        {{-- Drawer mobile --}}
-        <div x-show="mobileOpen" x-cloak class="md:hidden pb-4 space-y-2">
-            <a href="{{ route('home') }}" class="block py-2 text-sage-dark/80">Inicio</a>
-            <a href="{{ route('catalog') }}" class="block py-2 text-sage-dark/80">Catálogo</a>
-            @auth
-                <a href="{{ route('dashboard') }}" class="block py-2 text-sage-dark/80">Mi dashboard</a>
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="block py-2 text-coral">Cerrar sesión</button>
-                </form>
-            @else
-                <a href="{{ route('login') }}" class="block py-2 text-sage-dark/80">Iniciar sesión</a>
-                <a href="{{ route('register') }}" class="block py-2 text-sage font-semibold">Crear cuenta</a>
-            @endauth
         </div>
     </div>
 </nav>

@@ -62,6 +62,7 @@
                             </a>
                         @endauth
                     </div>
+                    <livewire:favorite-button :slug="$event['slug']" />
                 </aside>
 
             </div>

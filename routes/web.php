@@ -32,4 +32,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard/profile',  [\App\Http\Controllers\ProfileController::class, 'show'])->name('dashboard.profile');
     Route::patch('/dashboard/profile', [\App\Http\Controllers\ProfileController::class, 'updateProfile'])->name('profile.update');
     Route::patch('/dashboard/profile/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('profile.password.update');
+    Route::get('/dashboard/favorites', function () {
+    $slugs = auth()->user()->favoriteSlugs();
+
+    $allEvents = collect(json_decode(file_get_contents(database_path('mocks/events.json')), true));
+    $favorites = $allEvents->whereIn('slug', $slugs)->values();
+
+    return view('dashboard.favorites', compact('favorites'));
+})->name('dashboard.favorites');
 });
