@@ -15,7 +15,19 @@ Route::get('/events/{slug}', function ($slug) {
     $events = json_decode(file_get_contents(database_path('mocks/events.json')), true);
     $event  = collect($events)->firstWhere('slug', $slug);
     abort_if(!$event, 404);
-    return view('event-detail', compact('event'));
+
+    $showtimes = collect($event['showtimes']);
+
+    $event['dates'] = $showtimes->pluck('date')->unique()->values()->map(fn ($d) => [
+        'dow'   => \Carbon\Carbon::parse($d)->locale('es')->isoFormat('ddd'),
+        'day'   => \Carbon\Carbon::parse($d)->day,
+        'month' => \Carbon\Carbon::parse($d)->locale('es')->isoFormat('MMM'),
+    ])->all();
+
+    $event['times'] = $showtimes->pluck('time')->unique()->values()->all();
+    $event['price'] = number_format($event['price_from'], 0, ',', '.');
+
+    return view('events.show', compact('event'));
 })->name('events.show');
 
 // ─── Auth ───

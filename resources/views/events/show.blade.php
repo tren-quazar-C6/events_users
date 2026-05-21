@@ -149,7 +149,7 @@
             </div>
 
             {{-- CTA compra --}}
-            <a href="{{ route('events.seats', $event['id']) }}"
+            <a href="{{ route('events.seats', $event['slug']) }}"
                class="w-full bg-primary-container text-on-primary-container py-4 rounded-xl font-label-lg text-label-lg font-bold hover:brightness-95 active:scale-95 transition-all shadow-md shadow-primary/10 flex items-center justify-center gap-2">
                 <span class="material-symbols-outlined">confirmation_number</span>
                 Comprar entradas
