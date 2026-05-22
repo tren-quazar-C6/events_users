@@ -1,82 +1,34 @@
-# ============================================================================
-# events_users · Dockerfile
-# PHP-FPM + Nginx en el mismo container (Alpine)
-# ============================================================================
-
-# ---------- Stage 1: dependencias PHP ----------
-FROM php:8.4-alpine AS deps
+# ---------- Stage 1: BUILD ----------
+FROM php:8.4-alpine AS build
 WORKDIR /app
 
-RUN apk add --no-cache \
-    git curl unzip \
-    libpng-dev libzip-dev oniguruma-dev \
-    gnu-libiconv \
-    $PHPIZE_DEPS \
-    && docker-php-ext-install pdo pdo_mysql mbstring zip gd opcache \
-    && apk del $PHPIZE_DEPS
-
-ENV LD_PRELOAD /usr/lib/preloadable_libiconv.so
+RUN apk add --no-cache git curl unzip nodejs npm libpng-dev libzip-dev oniguruma-dev \
+    && docker-php-ext-install pdo pdo_mysql mbstring zip gd
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-COPY composer.json composer.lock ./
-RUN composer install \
-    --no-dev \
-    --no-autoloader \
-    --no-scripts \
-    --prefer-dist
-
-# ---------- Stage 2: assets ----------
-FROM node:20-alpine AS assets
-WORKDIR /app
-
-COPY package.json package-lock.json ./
-RUN npm ci
+COPY composer.json composer.lock package.json package-lock.json ./
+RUN composer install --no-dev --no-autoloader --prefer-dist \
+    && npm ci
 
 COPY . .
-RUN npm run build
+RUN composer dump-autoload --optimize --no-dev \
+    && npm run build
 
-# ---------- Stage 3: runtime ----------
+# ---------- Stage 2: RUNTIME ----------
 FROM php:8.4-alpine AS runtime
 WORKDIR /var/www/html
 
-RUN apk add --no-cache \
-    nginx \
-    php84-fpm \
-    libpng libzip oniguruma \
-    gnu-libiconv \
-    && mkdir -p /run/nginx /run/php
+RUN apk add --no-cache libpng libzip oniguruma
 
-ENV LD_PRELOAD /usr/lib/preloadable_libiconv.so
+# Copiar extensiones compiladas desde build
+COPY --from=build /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions/
+COPY --from=build /usr/local/etc/php/conf.d/ /usr/local/etc/php/conf.d/
 
-# Copiar extensiones PHP compiladas
-COPY --from=deps /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions/
-COPY --from=deps /usr/local/etc/php/conf.d/ /usr/local/etc/php/conf.d/
+COPY --from=build /app .
 
-# Copiar vendor
-COPY --from=deps /app/vendor ./vendor
-
-# Copiar assets compilados
-COPY --from=assets /app/public/build ./public/build
-
-# Copiar código
-COPY . .
-
-# Autoloader optimizado
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
-RUN composer dump-autoload --optimize --no-dev \
-    && rm /usr/bin/composer
-
-# Permisos Laravel
 RUN chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-# Configs
-COPY docker/nginx.conf /etc/nginx/nginx.conf
-COPY docker/php-fpm.conf /etc/php84/php-fpm.d/www.conf
-COPY docker/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
-COPY docker/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-
 EXPOSE 8000
-ENTRYPOINT ["/entrypoint.sh"]
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
