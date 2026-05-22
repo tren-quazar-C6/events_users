@@ -77,4 +77,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(Ticket::class);
     }
+
+    public function favorites(): HasMany
+    {
+        return $this->hasMany(Favorite::class);
+    }
+
+    public function hasFavorited(int $eventId): bool
+    {
+        return $this->favorites()->where('event_id', $eventId)->exists();
+    }
 }

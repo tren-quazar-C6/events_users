@@ -31,9 +31,10 @@
 
         {{-- Derecha: carrito + cerrar sesión --}}
         <div class="hidden md:flex items-center gap-6">
-            <button class="material-symbols-outlined text-primary hover:bg-surface-container-low p-2 rounded-full transition-all">
+            <a href="{{ route('dashboard.favorites') }}"
+               class="material-symbols-outlined text-primary hover:bg-surface-container-low p-2 rounded-full transition-all">
                 shopping_cart
-            </button>
+            </a>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit" class="border border-primary text-primary px-4 py-2 rounded-lg font-label-lg text-label-lg font-bold hover:bg-primary hover:text-on-primary transition-all">

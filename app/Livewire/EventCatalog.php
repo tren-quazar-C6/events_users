@@ -23,7 +23,7 @@ class EventCatalog extends Component
      *   poder usar ->filter(), ->pluck(), etc. encadenado. Es operación de
      *   memoria pura, despreciable.
      *
-     * - #[Computed] memoiza el resultado DENTRO de un mismo request,
+     * - #[Computed] memoriza el resultado DENTRO de un mismo request,
      *   así si se accede 3 veces solo se ejecuta una.
      */
     #[Computed]

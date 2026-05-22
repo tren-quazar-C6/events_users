@@ -45,21 +45,29 @@
     @else
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @foreach ($events as $event)
-                <a href="{{ route('events.show', $event['slug']) }}" ...>
-                    <div class="aspect-[4/3] flex items-center justify-center"
-                        style="background-color: {{ $event['poster_color'] }}">
-                        <span class="font-display text-4xl text-white/90 px-6 text-center">
-                            {{ $event['title'] }}
-                        </span>
+                <div class="relative">
+                    <a href="{{ route('events.show', $event['slug']) }}"
+                       class="bg-white rounded-card shadow-soft overflow-hidden hover:-translate-y-1 transition-all duration-300 block">
+                        <div class="aspect-[4/3] flex items-center justify-center"
+                             style="background-color: {{ $event['poster_color'] }}">
+                            <span class="font-display text-4xl text-white/90 px-6 text-center">
+                                {{ $event['title'] }}
+                            </span>
+                        </div>
+                        <div class="p-5">
+                            <span class="text-xs font-semibold uppercase tracking-wide text-sage bg-sage-light px-2 py-0.5 rounded-full">{{ $event['category'] }}</span>
+                            <h3 class="font-display text-xl text-sage-dark mt-2 mb-1 leading-snug line-clamp-2">{{ $event['title'] }}</h3>
+                            <p class="text-sm text-sage-dark/60">
+                                Desde ${{ number_format($event['price_from'], 0, ',', '.') }}
+                            </p>
+                        </div>
+                    </a>
+                    @auth
+                    <div class="absolute top-2 right-2 z-10">
+                        <livewire:favorite-button :eventId="$event['id']" :key="'cat-fav-'.$event['id']" />
                     </div>
-                    <div class="p-5">
-                        <span class="...">{{ $event['category'] }}</span>
-                        <h3 class="...">{{ $event['title'] }}</h3>
-                        <p class="...">
-                            Desde ${{ number_format($event['price_from'], 0, ',', '.') }}
-                        </p>
-                    </div>
-                </a>
+                    @endauth
+                </div>
             @endforeach
         </div>
     @endif

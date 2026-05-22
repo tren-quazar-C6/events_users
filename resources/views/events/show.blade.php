@@ -21,9 +21,15 @@
                 {{ $event['category'] }}
             </div>
 
-            <h1 class="font-display text-display text-on-surface mb-6 leading-none">
+            <h1 class="font-display text-display text-on-surface mb-4 leading-none">
                 {{ $event['title'] }}
             </h1>
+
+            @auth
+            <div class="mb-6">
+                <livewire:favorite-button :eventId="$event['id']" />
+            </div>
+            @endauth
 
             <div class="flex flex-wrap gap-6 mb-8 text-on-surface-variant">
                 <div class="flex items-center gap-2">

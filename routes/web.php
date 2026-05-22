@@ -48,7 +48,8 @@ Route::middleware('auth')->group(function () {
         return view('dashboard.tickets', compact('upcoming', 'past'));
     })->name('dashboard.tickets');
 
-    Route::get('/dashboard/history', fn () => view('dashboard.history'))->name('dashboard.history');
+    Route::get('/dashboard/history',   fn () => view('dashboard.history'))->name('dashboard.history');
+    Route::get('/dashboard/favorites', fn () => view('dashboard.favorites'))->name('dashboard.favorites');
 
     Route::get('/dashboard/profile',          [ProfileController::class, 'show'])->name('dashboard.profile');
     Route::patch('/dashboard/profile',         [ProfileController::class, 'updateProfile'])->name('profile.update');
