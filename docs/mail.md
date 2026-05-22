@@ -59,7 +59,7 @@ docker compose up -d mailpit
 
 ## Transporte producción
 
-Para pasar a producción solo se cambian las variables de entorno en el servidor. Sin tocar código.
+Para pasar a producción solo se cambian las variables de entorno en el servidor. 
 
 ```ini
 MAIL_MAILER=smtp
@@ -72,7 +72,7 @@ MAIL_FROM_ADDRESS="noreply@tudominio.com"
 MAIL_FROM_NAME="Tickify"
 ```
 
-Proveedor recomendado para este proyecto: **Resend** (3,000 emails/mes gratis, configuración de 2 minutos).
+futura implementacion con resend.
 
 ---
 
@@ -80,9 +80,8 @@ Proveedor recomendado para este proyecto: **Resend** (3,000 emails/mes gratis, c
 
 ### Por qué la cola
 
-Sin cola, `Mail::to()->send()` abre la conexión SMTP **dentro del mismo HTTP request**. El usuario espera 200–500ms en la pantalla de pago mientras el servidor negocia el protocolo con el servidor de correo. Si el SMTP falla, el request falla.
-
-Con cola, el request escribe un job en la tabla `jobs` (~5ms) y redirige de inmediato. El email se envía en un proceso separado, sin afectar la experiencia del usuario.
+reducir tiempos de cargas para renderizado de vistas y poder poner a funcionar el servicio con un worker
+para el sistema de cola, futura implementacion con un worker
 
 ### Implementación
 
