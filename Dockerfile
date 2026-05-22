@@ -11,7 +11,7 @@ RUN apk add --no-cache \
     git curl unzip \
     libpng-dev libzip-dev oniguruma-dev \
     $PHPIZE_DEPS \
-    && docker-php-ext-install pdo pdo_mysql mbstring zip gd opcache \
+    && docker-php-ext-install pdo pdo_mysql mbstring zip gd opcache iconv \
     && apk del $PHPIZE_DEPS
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
