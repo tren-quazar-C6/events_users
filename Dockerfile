@@ -1,21 +1,21 @@
 # ============================================================================
 # events_users · Dockerfile
-# PHP-FPM + Nginx en el mismo container
+# PHP-FPM + Nginx en el mismo container (Alpine)
 # ============================================================================
 
-# ---------- Stage 1: dependencias PHP (cacheado) ----------
+# ---------- Stage 1: dependencias PHP ----------
 FROM php:8.4-alpine AS deps
 WORKDIR /app
 
 RUN apk add --no-cache \
     git curl unzip \
     libpng-dev libzip-dev oniguruma-dev \
-    && docker-php-ext-install pdo pdo_mysql mbstring zip gd opcache
+    $PHPIZE_DEPS \
+    && docker-php-ext-install pdo pdo_mysql mbstring zip gd opcache \
+    && apk del $PHPIZE_DEPS
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Copiar solo los archivos de dependencias primero
-# Si composer.json no cambia, este layer se cachea y no reinstala
 COPY composer.json composer.lock ./
 RUN composer install \
     --no-dev \
@@ -23,64 +23,55 @@ RUN composer install \
     --no-scripts \
     --prefer-dist
 
-# ---------- Stage 2: build de assets (cacheado) ----------
+# ---------- Stage 2: assets ----------
 FROM node:20-alpine AS assets
-
 WORKDIR /app
 
-# Copiar solo package.json primero para cachear npm install
 COPY package.json package-lock.json ./
 RUN npm ci
 
-# Copiar código y compilar con Vite
 COPY . .
 RUN npm run build
 
-# ---------- Stage 3: runtime PHP-FPM + Nginx ----------
+# ---------- Stage 3: runtime ----------
 FROM php:8.4-alpine AS runtime
 WORKDIR /var/www/html
 
-# Instalar Nginx y librerías runtime (no de compilación)
+# Instalar PHP-FPM + Nginx + libs runtime
 RUN apk add --no-cache \
     nginx \
+    php84-fpm \
     libpng libzip oniguruma \
-    && mkdir -p /run/nginx
+    && mkdir -p /run/nginx /run/php
 
-# Copiar extensiones PHP compiladas en stage deps
+# Copiar extensiones PHP compiladas
 COPY --from=deps /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions/
 COPY --from=deps /usr/local/etc/php/conf.d/ /usr/local/etc/php/conf.d/
 
-# Copiar vendor (dependencias PHP)
+# Copiar vendor
 COPY --from=deps /app/vendor ./vendor
 
 # Copiar assets compilados
 COPY --from=assets /app/public/build ./public/build
 
-# Copiar el resto del código
+# Copiar código
 COPY . .
 
-# Regenerar autoloader optimizado con el código completo
+# Autoloader optimizado
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 RUN composer dump-autoload --optimize --no-dev \
     && rm /usr/bin/composer
 
-# Permisos de Laravel
+# Permisos Laravel
 RUN chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-# Configuración de PHP-FPM
-COPY docker/php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
-
-# Configuración de Nginx
+# Configs
 COPY docker/nginx.conf /etc/nginx/nginx.conf
-
-# Configuración de OPcache
+COPY docker/php-fpm.conf /etc/php84/php-fpm.d/www.conf
 COPY docker/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
-
-# Entrypoint
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 EXPOSE 8000
-
 ENTRYPOINT ["/entrypoint.sh"]
