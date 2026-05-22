@@ -10,9 +10,12 @@ WORKDIR /app
 RUN apk add --no-cache \
     git curl unzip \
     libpng-dev libzip-dev oniguruma-dev \
+    gnu-libiconv \
     $PHPIZE_DEPS \
-    && docker-php-ext-install pdo pdo_mysql mbstring zip gd opcache iconv \
+    && docker-php-ext-install pdo pdo_mysql mbstring zip gd opcache \
     && apk del $PHPIZE_DEPS
+
+ENV LD_PRELOAD /usr/lib/preloadable_libiconv.so
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
@@ -37,12 +40,14 @@ RUN npm run build
 FROM php:8.4-alpine AS runtime
 WORKDIR /var/www/html
 
-# Instalar PHP-FPM + Nginx + libs runtime
 RUN apk add --no-cache \
     nginx \
     php84-fpm \
     libpng libzip oniguruma \
+    gnu-libiconv \
     && mkdir -p /run/nginx /run/php
+
+ENV LD_PRELOAD /usr/lib/preloadable_libiconv.so
 
 # Copiar extensiones PHP compiladas
 COPY --from=deps /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions/
