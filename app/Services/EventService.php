@@ -1,0 +1,153 @@
+<?php
+
+namespace App\Services;
+
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+
+class EventService
+{
+    public function all(): Collection
+    {
+        return collect($this->fetchEvents())
+            ->map(fn (array $event) => $this->normalizeEvent($event))
+            ->filter(fn (array $event) => filled($event['title']))
+            ->values();
+    }
+
+    public function featured(int $limit = 3): Collection
+    {
+        return $this->all()->take($limit);
+    }
+
+    public function findBySlug(string $slug): ?array
+    {
+        return $this->all()->firstWhere('slug', $slug);
+    }
+
+    private function fetchEvents(): array
+    {
+        $baseUrl = config('services.events_api.url');
+
+        if (blank($baseUrl)) {
+            return $this->mockEvents();
+        }
+
+        try {
+            $response = Http::baseUrl($baseUrl)
+                ->timeout(config('services.events_api.timeout', 5))
+                ->acceptJson()
+                ->get('/api/eventos')
+                ->throw();
+
+            return $this->extractList($response->json());
+        } catch (\Throwable $exception) {
+            Log::warning('Events API unavailable; using local mock events.', [
+                'message' => $exception->getMessage(),
+            ]);
+
+            return $this->mockEvents();
+        }
+    }
+
+    private function extractList(mixed $payload): array
+    {
+        if (! is_array($payload)) {
+            return [];
+        }
+
+        foreach (['data', 'events', 'eventos', 'items', 'results'] as $key) {
+            if (isset($payload[$key]) && is_array($payload[$key])) {
+                return $payload[$key];
+            }
+        }
+
+        return array_is_list($payload) ? $payload : [];
+    }
+
+    private function normalizeEvent(array $event): array
+    {
+        $title = data_get($event, 'title')
+            ?? data_get($event, 'titulo')
+            ?? data_get($event, 'nombreEvento')
+            ?? data_get($event, 'nombre')
+            ?? data_get($event, 'name')
+            ?? '';
+
+        $slug = data_get($event, 'slug') ?: Str::slug($title);
+
+        return [
+            'id' => data_get($event, 'id')
+                ?? data_get($event, 'idEvento')
+                ?? data_get($event, 'eventoId'),
+            'slug' => $slug,
+            'title' => $title,
+            'category' => data_get($event, 'category')
+                ?? data_get($event, 'categoria')
+                ?? data_get($event, 'tipoEvento')
+                ?? data_get($event, 'tipo')
+                ?? 'General',
+            'synopsis' => data_get($event, 'synopsis')
+                ?? data_get($event, 'sinopsis')
+                ?? data_get($event, 'descripcion')
+                ?? data_get($event, 'description')
+                ?? '',
+            'poster_color' => data_get($event, 'poster_color')
+                ?? data_get($event, 'posterColor')
+                ?? data_get($event, 'color')
+                ?? '#7BB394',
+            'price_from' => (int) (data_get($event, 'price_from')
+                ?? data_get($event, 'priceFrom')
+                ?? data_get($event, 'precioDesde')
+                ?? data_get($event, 'precio')
+                ?? data_get($event, 'price')
+                ?? 0),
+            'showtimes' => $this->normalizeShowtimes(
+                data_get($event, 'showtimes')
+                ?? data_get($event, 'funciones')
+                ?? data_get($event, 'horarios')
+                ?? $this->showtimesFromEventDate(data_get($event, 'fechaEvento'))
+                ?? []
+            ),
+        ];
+    }
+
+    private function showtimesFromEventDate(?string $eventDate): array
+    {
+        if (blank($eventDate)) {
+            return [];
+        }
+
+        return [[
+            'date' => substr($eventDate, 0, 10),
+            'time' => substr($eventDate, 11, 5),
+        ]];
+    }
+
+    private function normalizeShowtimes(mixed $showtimes): array
+    {
+        if (! is_array($showtimes)) {
+            return [];
+        }
+
+        return collect($showtimes)
+            ->map(fn ($showtime) => is_array($showtime) ? [
+                'date' => data_get($showtime, 'date')
+                    ?? data_get($showtime, 'fecha')
+                    ?? data_get($showtime, 'day'),
+                'time' => data_get($showtime, 'time')
+                    ?? data_get($showtime, 'hora')
+                    ?? data_get($showtime, 'hour'),
+            ] : null)
+            ->filter(fn ($showtime) => is_array($showtime) && filled($showtime['date']) && filled($showtime['time']))
+            ->values()
+            ->all();
+    }
+
+    private function mockEvents(): array
+    {
+        return json_decode(file_get_contents(database_path('mocks/events.json')), true) ?? [];
+    }
+}

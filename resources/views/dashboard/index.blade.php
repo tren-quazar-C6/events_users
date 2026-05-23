@@ -6,7 +6,7 @@
     @php
         $tickets = collect(json_decode(file_get_contents(database_path('mocks/my-tickets.json'))));
         $upcoming = $tickets->filter(fn ($t) => \Carbon\Carbon::parse($t->date)->isFuture())->values();
-        $events = collect(json_decode(file_get_contents(database_path('mocks/events.json'))))->take(3);
+        $events = app(\App\Services\EventService::class)->featured();
     @endphp
 
     {{-- Saludo --}}
@@ -55,11 +55,11 @@
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             @foreach ($events as $event)
-                <a href="{{ route('events.show', $event->slug) }}" class="bg-white rounded-card shadow-soft overflow-hidden hover:shadow-lg transition">
-                    <div class="aspect-[4/3]" style="background-color: {{ $event->poster_color }}"></div>
+                <a href="{{ route('events.show', $event['slug']) }}" class="bg-white rounded-card shadow-soft overflow-hidden hover:shadow-lg transition">
+                    <div class="aspect-[4/3]" style="background-color: {{ $event['poster_color'] }}"></div>
                     <div class="p-4">
-                        <p class="text-xs text-sage-dark/60">{{ $event->category }}</p>
-                        <p class="font-display text-lg text-sage-dark mt-1">{{ $event->title }}</p>
+                        <p class="text-xs text-sage-dark/60">{{ $event['category'] }}</p>
+                        <p class="font-display text-lg text-sage-dark mt-1">{{ $event['title'] }}</p>
                     </div>
                 </a>
             @endforeach

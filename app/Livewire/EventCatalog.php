@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Services\EventService;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -29,14 +30,11 @@ class EventCatalog extends Component
     #[Computed]
     public function allEvents()
     {
-        $raw = Cache::remember('events.all', now()->addMinutes(5), function () {
-            return json_decode(
-                file_get_contents(database_path('mocks/events.json')),
-                true   // ← true = devuelve arrays asociativos, no stdClass
-            );
+        $events = Cache::remember('events.all', now()->addMinutes(5), function () {
+            return app(EventService::class)->all()->all();
         });
 
-        return collect($raw);
+        return collect($events);
     }
 
     #[Computed]

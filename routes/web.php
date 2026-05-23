@@ -2,14 +2,14 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Services\EventService;
 
 // ─── Públicas ───
 Route::get('/', fn () => view('home'))->name('home');
 Route::get('/catalog', fn () => view('catalog'))->name('catalog');
 
 Route::get('/events/{slug}', function ($slug) {
-    $events = json_decode(file_get_contents(database_path('mocks/events.json')));
-    $event = collect($events)->firstWhere('slug', $slug);
+    $event = app(EventService::class)->findBySlug($slug);
 
     abort_if(! $event, 404);
 
@@ -33,11 +33,13 @@ Route::middleware('auth')->group(function () {
     Route::patch('/dashboard/profile', [\App\Http\Controllers\ProfileController::class, 'updateProfile'])->name('profile.update');
     Route::patch('/dashboard/profile/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('profile.password.update');
     Route::get('/dashboard/favorites', function () {
-    $slugs = auth()->user()->favoriteSlugs();
+        $slugs = auth()->user()->favoriteSlugs();
 
-    $allEvents = collect(json_decode(file_get_contents(database_path('mocks/events.json')), true));
-    $favorites = $allEvents->whereIn('slug', $slugs)->values();
+        $favorites = app(EventService::class)
+            ->all()
+            ->whereIn('slug', $slugs)
+            ->values();
 
-    return view('dashboard.favorites', compact('favorites'));
-})->name('dashboard.favorites');
+        return view('dashboard.favorites', compact('favorites'));
+    })->name('dashboard.favorites');
 });

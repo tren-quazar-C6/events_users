@@ -45,6 +45,10 @@
     @else
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @foreach ($events as $event)
+                @php
+                    $lowestPrice = $event['price_from'] ?? null;
+                @endphp
+
                 <div class="bg-white rounded-card shadow-soft overflow-hidden hover:shadow-lg transition group">
 
                 <div class="relative aspect-[4/3] flex items-center justify-center"
@@ -70,9 +74,16 @@
                             {{ $event['title'] }}
                         </h3>
                     </a>
-                    <p class="text-sm font-semibold text-sage mt-3">
-                        Desde ${{ number_format($event['price_from'], 0, ',', '.') }}
-                    </p>
+                    <div class="mt-3">
+                        <p class="text-xs text-sage-dark/60">Precio desde</p>
+                        <p class="text-sm font-semibold text-sage">
+                            @if ($lowestPrice > 0)
+                                ${{ number_format($lowestPrice, 0, ',', '.') }}
+                            @else
+                                Por confirmar
+                            @endif
+                        </p>
+                    </div>
                 </div>
             </div>
             @endforeach
