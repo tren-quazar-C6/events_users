@@ -96,7 +96,7 @@ class PurchaseConfirmation extends Mailable implements ShouldQueue
 }
 
 // app/Http/Controllers/PurchaseController.php
-Mail::to(Auth::user())->send(new PurchaseConfirmation($purchase));
+Mail::to(Auth::user())->send(new PurchaseConfirmation($venta));
 // ↑ encola el job porque el Mailable implementa ShouldQueue
 ```
 
@@ -109,6 +109,19 @@ php artisan queue:work
 ```
 
 Debe correr en una terminal separada mientras se desarrolla. Sin él, los jobs se acumulan en la tabla `jobs` pero ningún email se envía.
+
+> **Reiniciar el worker es obligatorio** después de cualquier cambio de código o configuración.
+> El worker carga la app en memoria al arrancar — los cambios posteriores no se aplican hasta reiniciarlo.
+
+### APP_URL y links en el email
+
+Los links dentro del email se generan en el worker (sin request HTTP activo). Laravel usa `APP_URL` como base para `route()` en ese contexto. Para `php artisan serve`, el puerto debe estar incluido:
+
+```ini
+APP_URL=http://localhost:8000
+```
+
+`AppServiceProvider::boot()` llama `URL::forceRootUrl(config('app.url'))` para que tanto el worker como los redirects de HTTP usen siempre la misma base URL.
 
 Para procesar un único job puntual sin dejar el worker corriendo:
 
