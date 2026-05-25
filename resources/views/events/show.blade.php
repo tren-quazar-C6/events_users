@@ -27,7 +27,7 @@
 
             @auth
             <div class="mb-6">
-                <livewire:favorite-button :eventId="$event['id']" />
+                <livewire:favorite-button :eventoId="$event['id']" />
             </div>
             @endauth
 

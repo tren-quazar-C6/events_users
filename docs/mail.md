@@ -194,7 +194,7 @@ Usuario confirma pago
 PurchaseController::confirmCheckout()
         │  crea Purchase + Tickets en BD
         │
-        └─ Mail::to($user)->send(new PurchaseConfirmation($purchase))
+        └─ Mail::to($user)->send(new PurchaseConfirmation($venta))
                 │
                 │ detecta ShouldQueue → no abre SMTP
                 ▼
@@ -206,7 +206,7 @@ PurchaseController::confirmCheckout()
                 ▼
         php artisan queue:work
                 │
-                └─ deserializa Purchase → renderiza Blade
+                └─ deserializa Venta → renderiza Blade
                            │
                            ▼
                    conexión SMTP → Mailpit (dev) / Resend (prod)
