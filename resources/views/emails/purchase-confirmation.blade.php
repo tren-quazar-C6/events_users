@@ -64,7 +64,7 @@
         <div class="price-total"><span>Total</span><span>$ {{ number_format($venta->total, 0, ',', '.') }}</span></div>
 
         <div class="cta">
-            <a href="{{ route('purchase.confirmation', $venta->referencia_interna) }}">Ver mis entradas con QR</a>
+            <a href="{{ route('dashboard.tickets') }}">Ver mis entradas</a>
         </div>
     </div>
     <div class="footer">
