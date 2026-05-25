@@ -25,15 +25,15 @@
             {{-- Tarjeta del evento --}}
             <div class="bg-surface-container-low rounded-3xl p-6 border border-secondary-container/20 shadow-sm">
                 <p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Evento</p>
-                <h2 class="font-headline-md text-headline-md text-on-surface">{{ $data['event_title'] }}</h2>
+                <h2 class="font-headline-md text-headline-md text-on-surface">{{ $evento->nombre_evento }}</h2>
                 <div class="mt-4 space-y-2 text-on-surface-variant font-body-md text-body-md">
                     <p class="flex items-center gap-2">
                         <span class="material-symbols-outlined" style="font-size:18px">calendar_today</span>
-                        {{ $data['event_date'] }} · {{ $data['event_time'] }}h
+                        {{ $evento->fecha_evento->translatedFormat('j \\d\\e F \\d\\e Y') }} · {{ $evento->fecha_evento->format('H:i') }}h
                     </p>
                     <p class="flex items-center gap-2">
                         <span class="material-symbols-outlined" style="font-size:18px">location_on</span>
-                        {{ $data['venue'] }}, {{ $data['city'] }}
+                        {{ $evento->venue }}, {{ $evento->city }}
                     </p>
                 </div>
             </div>
@@ -41,17 +41,17 @@
             {{-- Asientos seleccionados --}}
             <div class="bg-surface-container-low rounded-3xl p-6 border border-secondary-container/20 shadow-sm">
                 <p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-4">
-                    Asientos ({{ count($data['seats']) }})
+                    Asientos ({{ $eventoAsientos->count() }})
                 </p>
                 <div class="space-y-2">
-                    @foreach ($data['seats'] as $seat)
+                    @foreach ($eventoAsientos as $ea)
                         <div class="flex items-center justify-between py-2 border-b border-secondary-container/20 last:border-0">
                             <span class="font-body-md text-body-md text-on-surface">
-                                Fila {{ $seat['row'] }}, Asiento {{ $seat['num'] }}
-                                <span class="text-on-surface-variant">· {{ $seat['section'] }}</span>
+                                Fila {{ $ea->asiento->fila }}, Asiento {{ $ea->asiento->numero }}
+                                <span class="text-on-surface-variant">· {{ $ea->asiento->zona->nombre_zona }}</span>
                             </span>
                             <span class="font-label-lg text-label-lg text-on-surface">
-                                $ {{ number_format($data['price'], 0, ',', '.') }}
+                                $ {{ number_format($ea->precio, 0, ',', '.') }}
                             </span>
                         </div>
                     @endforeach
@@ -100,7 +100,7 @@
 
                 <div class="space-y-3">
                     <div class="flex justify-between font-body-md text-body-md text-on-surface-variant">
-                        <span>{{ count($data['seats']) }} {{ count($data['seats']) === 1 ? 'entrada' : 'entradas' }}</span>
+                        <span>{{ $eventoAsientos->count() }} {{ $eventoAsientos->count() === 1 ? 'entrada' : 'entradas' }}</span>
                         <span>$ {{ number_format($subtotal, 0, ',', '.') }}</span>
                     </div>
                     <div class="flex justify-between font-body-md text-body-md text-on-surface-variant">

@@ -1,7 +1,6 @@
 <div class="max-w-7xl mx-auto">
 
-    @if ($events->isEmpty())
-        {{-- Empty state --}}
+    @if ($eventos->isEmpty())
         <div class="bg-cream rounded-card border-2 border-dashed border-sage/20 flex flex-col items-center justify-center p-16 text-center">
             <div class="w-16 h-16 bg-white rounded-full shadow-soft flex items-center justify-center mb-5">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-sage/40" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -17,30 +16,30 @@
         </div>
     @else
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            @foreach ($events as $event)
+            @foreach ($eventos as $evento)
                 <div class="relative">
-                    <a href="{{ route('events.show', $event['slug']) }}"
+                    <a href="{{ route('events.show', $evento->slug) }}"
                        class="bg-white rounded-card shadow-soft overflow-hidden hover:-translate-y-1 transition-all duration-300 block">
                         <div class="aspect-[4/3] flex items-center justify-center"
-                             style="background-color: {{ $event['poster_color'] }}">
+                             style="background-color: {{ $evento->poster_color }}">
                             <span class="font-display text-4xl text-white/90 px-6 text-center">
-                                {{ $event['title'] }}
+                                {{ $evento->nombre_evento }}
                             </span>
                         </div>
                         <div class="p-5">
                             <span class="text-xs font-semibold uppercase tracking-wide text-sage bg-sage-light px-2 py-0.5 rounded-full">
-                                {{ $event['category'] }}
+                                {{ $evento->tipo->nombre_tipo ?? '' }}
                             </span>
                             <h3 class="font-display text-xl text-sage-dark mt-2 mb-1 leading-snug line-clamp-2">
-                                {{ $event['title'] }}
+                                {{ $evento->nombre_evento }}
                             </h3>
                             <p class="text-sm text-sage-dark/60">
-                                Desde ${{ number_format($event['price_from'], 0, ',', '.') }}
+                                Desde ${{ number_format($evento->price_from, 0, ',', '.') }}
                             </p>
                         </div>
                     </a>
                     <div class="absolute top-2 right-2 z-10">
-                        <livewire:favorite-button :eventId="$event['id']" :key="'fav-list-'.$event['id']" />
+                        <livewire:favorite-button :eventoId="$evento->id" :key="'fav-list-'.$evento->id" />
                     </div>
                 </div>
             @endforeach

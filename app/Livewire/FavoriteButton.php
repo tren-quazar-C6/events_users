@@ -7,13 +7,13 @@ use Livewire\Component;
 
 class FavoriteButton extends Component
 {
-    public int $eventId;
+    public int  $eventoId;
     public bool $isFavorited = false;
 
-    public function mount(int $eventId): void
+    public function mount(int $eventoId): void
     {
-        $this->eventId   = $eventId;
-        $this->isFavorited = Auth::user()->hasFavorited($eventId);
+        $this->eventoId    = $eventoId;
+        $this->isFavorited = Auth::user()->hasFavorited($eventoId);
     }
 
     public function toggle(): void
@@ -21,12 +21,12 @@ class FavoriteButton extends Component
         $user = Auth::user();
 
         if ($this->isFavorited) {
-            $user->favorites()->where('event_id', $this->eventId)->delete();
+            $user->favoritos()->where('evento_id', $this->eventoId)->delete();
         } else {
-            $user->favorites()->create(['event_id' => $this->eventId]);
+            $user->favoritos()->create(['evento_id' => $this->eventoId]);
         }
 
-        $this->isFavorited = ! $this->isFavorited;
+        $this->isFavorited = !$this->isFavorited;
         $this->dispatch('favorites-changed');
     }
 

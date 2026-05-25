@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Compra confirmada · ' . $purchase->reference . ' — Tickify')
+@section('title', 'Compra confirmada · ' . $venta->referencia_interna . ' — Tickify')
 
 @section('content')
 
@@ -13,7 +13,7 @@
         </div>
         <h1 class="font-headline-lg text-headline-lg text-on-surface">¡Compra confirmada!</h1>
         <p class="font-body-lg text-body-lg text-on-surface-variant mt-2">
-            Referencia: <span class="font-label-lg text-label-lg text-primary">{{ $purchase->reference }}</span>
+            Referencia: <span class="font-label-lg text-label-lg text-primary">{{ $venta->referencia_interna }}</span>
         </p>
         <p class="font-body-md text-body-md text-on-surface-variant mt-1">
             Enviamos tus entradas a <strong>{{ Auth::user()->email }}</strong>
@@ -22,7 +22,12 @@
 
     {{-- Tarjetas de ticket --}}
     <div class="space-y-6">
-        @foreach ($purchase->tickets as $ticket)
+        @foreach ($venta->tickets as $ticket)
+            @php
+                $ea     = $ticket->eventoAsiento;
+                $evento = $ea->evento;
+                $asiento= $ea->asiento;
+            @endphp
             <div class="bg-surface-container-low rounded-3xl border border-secondary-container/20 shadow-sm overflow-hidden">
                 <div class="p-6 grid grid-cols-1 sm:grid-cols-3 gap-6 items-center">
 
@@ -30,39 +35,39 @@
                     <div class="sm:col-span-2 space-y-3">
                         <div>
                             <p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Evento</p>
-                            <p class="font-headline-sm text-headline-sm text-on-surface">{{ $ticket->event_title }}</p>
+                            <p class="font-headline-sm text-headline-sm text-on-surface">{{ $evento->nombre_evento }}</p>
                         </div>
                         <div class="grid grid-cols-2 gap-3 text-on-surface-variant font-body-md text-body-md">
                             <p class="flex items-center gap-1.5">
                                 <span class="material-symbols-outlined" style="font-size:16px">calendar_today</span>
-                                {{ $ticket->event_date }}
+                                {{ $evento->fecha_evento->translatedFormat('j \\d\\e F \\d\\e Y') }}
                             </p>
                             <p class="flex items-center gap-1.5">
                                 <span class="material-symbols-outlined" style="font-size:16px">schedule</span>
-                                {{ $ticket->event_time }}h
+                                {{ $evento->fecha_evento->format('H:i') }}h
                             </p>
                             <p class="flex items-center gap-1.5">
                                 <span class="material-symbols-outlined" style="font-size:16px">location_on</span>
-                                {{ $ticket->venue }}
+                                {{ $evento->venue }}
                             </p>
                             <p class="flex items-center gap-1.5">
                                 <span class="material-symbols-outlined" style="font-size:16px">event_seat</span>
-                                Fila {{ $ticket->seat_row }}, Asiento {{ $ticket->seat_number }}
+                                Fila {{ $asiento->fila }}, Asiento {{ $asiento->numero }}
                             </p>
                         </div>
                         <div class="flex items-center gap-3 pt-2">
                             <span class="bg-primary-container text-on-primary-container px-4 py-1.5 rounded-full font-label-md text-label-md tracking-widest">
-                                {{ $ticket->unique_code }}
+                                {{ $ticket->codigo_unico }}
                             </span>
-                            <span class="font-body-sm text-body-sm text-on-surface-variant">{{ $ticket->seat_section }}</span>
+                            <span class="font-body-sm text-body-sm text-on-surface-variant">{{ $asiento->zona->nombre_zona }}</span>
                         </div>
                     </div>
 
                     {{-- QR code --}}
                     <div class="flex justify-center sm:justify-end">
                         <div class="bg-white p-3 rounded-2xl shadow-sm border border-secondary-container/20">
-                            <img src="{{ route('tickets.qr', $ticket->unique_code) }}"
-                                 alt="QR {{ $ticket->unique_code }}"
+                            <img src="{{ route('tickets.qr', $ticket->codigo_unico) }}"
+                                 alt="QR {{ $ticket->codigo_unico }}"
                                  class="w-32 h-32">
                         </div>
                     </div>

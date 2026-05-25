@@ -3,15 +3,15 @@
 namespace App\Console\Commands;
 
 use App\Mail\EventDateChanged;
-use App\Models\Favorite;
+use App\Models\Evento;
+use App\Models\Favorito;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 
 class ChangeEventDate extends Command
 {
     protected $signature   = 'events:change-date {slug} {oldDate} {newDate}';
-    protected $description = 'Actualiza la fecha de un evento en el JSON y notifica a quienes lo tienen como favorito';
+    protected $description = 'Cambia la fecha de un evento en BD y notifica a los usuarios que lo tienen como favorito';
 
     public function handle(): int
     {
@@ -19,44 +19,34 @@ class ChangeEventDate extends Command
         $oldDate = $this->argument('oldDate');
         $newDate = $this->argument('newDate');
 
-        $path   = database_path('mocks/events.json');
-        $events = json_decode(file_get_contents($path), true);
+        $evento = Evento::where('slug', $slug)->first();
 
-        $index = collect($events)->search(fn ($e) => $e['slug'] === $slug);
-
-        if ($index === false) {
-            $this->error("No se encontró el evento con slug: {$slug}");
+        if (!$evento) {
+            $this->error("Evento '{$slug}' no encontrado.");
             return self::FAILURE;
         }
 
-        $updated = false;
-        foreach ($events[$index]['showtimes'] as &$showtime) {
-            if ($showtime['date'] === $oldDate) {
-                $showtime['date'] = $newDate;
-                $updated = true;
-            }
-        }
-        unset($showtime);
-
-        if (! $updated) {
-            $this->error("No se encontraron funciones con fecha {$oldDate} para el evento '{$slug}'.");
-            return self::FAILURE;
-        }
-
-        file_put_contents($path, json_encode($events, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-        Cache::forget('events.all');
+        $hora = $evento->fecha_evento->format('H:i:s');
+        $evento->update(['fecha_evento' => $newDate . ' ' . $hora]);
 
         $this->info("Fecha actualizada: {$oldDate} → {$newDate}");
 
-        $event     = $events[$index];
-        $favorites = Favorite::where('event_id', $event['id'])->with('user')->get();
+        $usuarios = Favorito::where('evento_id', $evento->id)
+            ->with('user')
+            ->get()
+            ->pluck('user')
+            ->filter();
 
-        foreach ($favorites as $favorite) {
-            Mail::to($favorite->user)->send(new EventDateChanged($favorite->user, $event, $oldDate, $newDate));
+        if ($usuarios->isEmpty()) {
+            $this->info('Sin favoritos. No se envían correos.');
+            return self::SUCCESS;
         }
 
-        $count = $favorites->count();
-        $this->info("{$count} " . ($count === 1 ? 'correo encolado' : 'correos encolados') . ".");
+        foreach ($usuarios as $user) {
+            Mail::to($user)->send(new EventDateChanged($user, $evento, $oldDate, $newDate));
+        }
+
+        $this->info("Correos encolados para {$usuarios->count()} usuario(s).");
 
         return self::SUCCESS;
     }

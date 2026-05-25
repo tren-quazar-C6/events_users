@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ticket;
+use App\Models\Venta;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
@@ -12,13 +13,12 @@ use Illuminate\Support\Facades\Auth;
 
 class TicketController extends Controller
 {
-    /**
-     * Devuelve el QR code en SVG para un ticket del usuario autenticado.
-     */
     public function qr(string $code): Response
     {
-        $ticket = Ticket::where('unique_code', $code)
-            ->where('user_id', Auth::id())
+        $ventaIds = Venta::where('user_id', Auth::id())->pluck('id');
+
+        $ticket = Ticket::whereIn('venta_id', $ventaIds)
+            ->where('codigo_unico', $code)
             ->firstOrFail();
 
         $renderer = new ImageRenderer(
@@ -26,7 +26,7 @@ class TicketController extends Controller
             new SvgImageBackEnd()
         );
 
-        $svg = (new Writer($renderer))->writeString($ticket->unique_code);
+        $svg = (new Writer($renderer))->writeString($ticket->qr_token);
 
         return response($svg, 200)
             ->header('Content-Type', 'image/svg+xml');

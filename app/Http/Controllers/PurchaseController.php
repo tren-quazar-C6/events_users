@@ -3,128 +3,154 @@
 namespace App\Http\Controllers;
 
 use App\Mail\PurchaseConfirmation;
-use App\Models\Purchase;
+use App\Models\EstadoTicket;
+use App\Models\Evento;
+use App\Models\EventoAsiento;
 use App\Models\Ticket;
+use App\Models\Venta;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class PurchaseController extends Controller
 {
-    /**
-     * Recibe los asientos seleccionados desde el mapa, guarda en sesión y
-     * redirige al resumen de checkout.
-     */
     public function initCheckout(Request $request, string $slug): RedirectResponse
     {
-        $seats = json_decode($request->input('seats', '[]'), true);
+        $ids = json_decode($request->input('seats', '[]'), true);
 
-        if (empty($seats)) {
+        if (empty($ids)) {
             return back()->with('error', 'Selecciona al menos un asiento.');
         }
 
-        $events  = json_decode(file_get_contents(database_path('mocks/events.json')), true);
-        $event   = collect($events)->firstWhere('slug', $slug);
-        $eventId = $event['id'] ?? 0;
+        $evento = Evento::where('slug', $slug)->firstOrFail();
+
+        $eventoAsientos = DB::transaction(function () use ($ids, $evento) {
+            $eas = EventoAsiento::where('evento_id', $evento->id)
+                ->whereIn('id', $ids)
+                ->lockForUpdate()
+                ->get();
+
+            $disponibles = $eas->filter(fn ($ea) => $ea->isDisponible());
+
+            if ($disponibles->count() !== count($ids)) {
+                return null;
+            }
+
+            $expira = now()->addMinutes(15);
+            foreach ($disponibles as $ea) {
+                $ea->update([
+                    'estado'          => 'RESERVADO',
+                    'fecha_reserva'   => now(),
+                    'reserva_expira'  => $expira,
+                ]);
+            }
+
+            return $disponibles;
+        });
+
+        if (!$eventoAsientos) {
+            return back()->with('error', 'Algunos asientos ya no están disponibles. Por favor selecciona de nuevo.');
+        }
 
         $token = Str::random(40);
 
         session(["checkout:{$token}" => [
-            'event_id'    => $eventId,
-            'event_title' => $request->input('event_title'),
-            'event_date'  => $request->input('event_date'),
-            'event_time'  => $request->input('event_time'),
-            'venue'       => $request->input('venue'),
-            'city'        => $request->input('city'),
-            'price'       => (int) $request->input('price'),
-            'seats'       => $seats,
+            'evento_id'          => $evento->id,
+            'evento_asiento_ids' => $eventoAsientos->pluck('id')->all(),
+            'expira'             => now()->addMinutes(15)->toIso8601String(),
         ]]);
 
         return redirect()->route('checkout', $token);
     }
 
-    /**
-     * Muestra el resumen de la compra con form de pago mock.
-     */
     public function checkout(string $token): View
     {
         $data = session("checkout:{$token}");
-
         abort_if(!$data, 404, 'Sesión de checkout inválida o expirada.');
 
-        $subtotal = count($data['seats']) * $data['price'];
+        $evento         = Evento::findOrFail($data['evento_id']);
+        $eventoAsientos = EventoAsiento::with(['asiento.zona'])
+            ->whereIn('id', $data['evento_asiento_ids'])
+            ->get();
+
+        $subtotal = $eventoAsientos->sum('precio');
         $fee      = 3500;
         $total    = $subtotal + $fee;
 
-        return view('checkout.index', compact('token', 'data', 'subtotal', 'fee', 'total'));
+        return view('checkout.index', compact('token', 'data', 'evento', 'eventoAsientos', 'subtotal', 'fee', 'total'));
     }
 
-    /**
-     * Confirma la compra: crea Purchase + Tickets en BD y envía el email.
-     */
     public function confirmCheckout(Request $request, string $token): RedirectResponse
     {
         $data = session("checkout:{$token}");
-
         abort_if(!$data, 404, 'Sesión de checkout inválida o expirada.');
 
-        $subtotal = count($data['seats']) * $data['price'];
-        $fee      = 3500;
-        $total    = $subtotal + $fee;
+        $venta = DB::transaction(function () use ($data) {
+            $eventoAsientos = EventoAsiento::with(['asiento.zona', 'evento'])
+                ->whereIn('id', $data['evento_asiento_ids'])
+                ->where('estado', 'RESERVADO')
+                ->lockForUpdate()
+                ->get();
 
-        $purchase = Purchase::create([
-            'user_id'     => Auth::id(),
-            'event_id'    => $data['event_id'],
-            'event_title' => $data['event_title'],
-            'event_date'  => $data['event_date'],
-            'event_time'  => $data['event_time'],
-            'venue'       => $data['venue'],
-            'city'        => $data['city'],
-            'subtotal'    => $subtotal,
-            'service_fee' => $fee,
-            'total'       => $total,
-            'status'      => 'confirmed',
-        ]);
+            if ($eventoAsientos->count() !== count($data['evento_asiento_ids'])) {
+                return null;
+            }
 
-        foreach ($data['seats'] as $seat) {
-            Ticket::create([
-                'purchase_id'  => $purchase->id,
-                'user_id'      => Auth::id(),
-                'event_id'     => $data['event_id'],
-                'event_title'  => $data['event_title'],
-                'event_date'   => $data['event_date'],
-                'event_time'   => $data['event_time'],
-                'venue'        => $data['venue'],
-                'city'         => $data['city'],
-                'seat_row'     => $seat['row'],
-                'seat_number'  => $seat['num'],
-                'seat_section' => $seat['section'],
-                'price'        => $data['price'],
-                'status'       => 'confirmed',
+            $subtotal = $eventoAsientos->sum('precio');
+            $fee      = 3500;
+
+            $venta = Venta::create([
+                'user_id'        => Auth::id(),
+                'tipo_venta'     => 'ONLINE',
+                'subtotal'       => $subtotal,
+                'cargo_servicio' => $fee,
+                'total'          => $subtotal + $fee,
+                'moneda'         => 'COP',
+                'estado_pago'    => 'APPROVED',
+                'metodo_pago'    => 'MOCK',
+                'fecha_pago'     => now(),
             ]);
+
+            $estadoId = EstadoTicket::where('nombre_estado', 'CONFIRMADO')->value('id');
+
+            foreach ($eventoAsientos as $ea) {
+                Ticket::create([
+                    'venta_id'          => $venta->id,
+                    'estado_ticket_id'  => $estadoId,
+                    'evento_asiento_id' => $ea->id,
+                ]);
+
+                $ea->update(['estado' => 'VENDIDO']);
+            }
+
+            return $venta;
+        });
+
+        if (!$venta) {
+            session()->forget("checkout:{$token}");
+            return redirect()->route('catalog')
+                ->with('error', 'La reserva expiró. Por favor selecciona tus asientos nuevamente.');
         }
 
         session()->forget("checkout:{$token}");
 
-        $purchase->load('tickets');
-        Mail::to(Auth::user())->send(new PurchaseConfirmation($purchase));
+        $venta->load('tickets.eventoAsiento.asiento.zona', 'tickets.eventoAsiento.evento');
+        Mail::to(Auth::user())->send(new PurchaseConfirmation($venta));
 
-        return redirect()->route('purchase.confirmation', $purchase->reference);
+        return redirect()->route('purchase.confirmation', $venta->referencia_interna);
     }
 
-    /**
-     * Vista final con tickets y QR codes.
-     */
     public function confirmation(string $reference): View
     {
-        $purchase = Purchase::with('tickets')
-            ->where('reference', $reference)
+        $venta = Venta::with('tickets.eventoAsiento.asiento.zona', 'tickets.eventoAsiento.evento')
+            ->where('referencia_interna', $reference)
             ->where('user_id', Auth::id())
             ->firstOrFail();
 
-        return view('checkout.confirmation', compact('purchase'));
+        return view('checkout.confirmation', compact('venta'));
     }
 }

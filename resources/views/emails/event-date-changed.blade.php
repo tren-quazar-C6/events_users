@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cambio de fecha · {{ $event['title'] }}</title>
+    <title>Cambio de fecha · {{ $evento->nombre_evento }}</title>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f2ed; margin: 0; padding: 0; }
         .wrapper { max-width: 600px; margin: 32px auto; background: #fffdf9; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
@@ -45,7 +45,7 @@
         <p class="section-label">Evento afectado</p>
 
         <div class="event-card">
-            <p class="event-title">{{ $event['title'] }}</p>
+            <p class="event-title">{{ $evento->nombre_evento }}</p>
 
             <div class="date-change">
                 <div class="date-box old">
@@ -60,8 +60,8 @@
             </div>
 
             <div class="meta">
-                <span>📍 {{ $event['venue'] }}, {{ $event['city'] }}</span>
-                <span>🎭 {{ $event['category'] }}</span>
+                <span>📍 {{ $evento->venue }}, {{ $evento->city }}</span>
+                <span>🎭 {{ $evento->tipo->nombre_tipo ?? '' }}</span>
             </div>
         </div>
 
@@ -72,7 +72,7 @@
         </p>
 
         <div class="cta">
-            <a href="{{ route('events.show', $event['slug']) }}">Ver evento</a>
+            <a href="{{ route('events.show', $evento->slug) }}">Ver evento</a>
         </div>
     </div>
     <div class="footer">

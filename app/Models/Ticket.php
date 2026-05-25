@@ -4,45 +4,42 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 class Ticket extends Model
 {
-    protected $fillable = [
-        'unique_code',
-        'purchase_id',
-        'user_id',
-        'event_id',
-        'event_title',
-        'event_date',
-        'event_time',
-        'venue',
-        'city',
-        'seat_row',
-        'seat_number',
-        'seat_section',
-        'price',
-        'status',
-    ];
+    protected $fillable = ['venta_id', 'estado_ticket_id', 'evento_asiento_id'];
 
     protected static function booted(): void
     {
         static::creating(function (Ticket $ticket) {
             do {
                 $code = 'BTC-' . strtoupper(Str::random(6));
-            } while (self::where('unique_code', $code)->exists());
+            } while (self::where('codigo_unico', $code)->exists());
 
-            $ticket->unique_code = $code;
+            $ticket->codigo_unico = $code;
+            $ticket->qr_token     = (string) Str::uuid();
         });
     }
 
-    public function purchase(): BelongsTo
+    public function venta(): BelongsTo
     {
-        return $this->belongsTo(Purchase::class);
+        return $this->belongsTo(Venta::class, 'venta_id');
     }
 
-    public function user(): BelongsTo
+    public function estadoTicket(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(EstadoTicket::class, 'estado_ticket_id');
+    }
+
+    public function eventoAsiento(): BelongsTo
+    {
+        return $this->belongsTo(EventoAsiento::class, 'evento_asiento_id');
+    }
+
+    public function scans(): HasMany
+    {
+        return $this->hasMany(Scan::class, 'ticket_id');
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Mail;
 
-use App\Models\Purchase;
+use App\Models\Venta;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -14,12 +14,12 @@ class PurchaseConfirmation extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
-    public function __construct(public readonly Purchase $purchase) {}
+    public function __construct(public readonly Venta $venta) {}
 
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: "Confirmación de compra · {$this->purchase->reference}",
+            subject: "Confirmación de compra · {$this->venta->referencia_interna}",
         );
     }
 

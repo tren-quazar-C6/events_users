@@ -54,34 +54,7 @@
 
 {{-- ── SEAT MAP + SIDEBAR ──────────────────────────────────────────── --}}
 <div x-data="{
-        rows: [
-            { label: 'A', section: 'Platea Central', seats: [
-                {n:1,s:'a'},{n:2,s:'a'},{n:3,s:'o'},{n:4,s:'o'},null,
-                {n:5,s:'sel'},{n:6,s:'sel'},{n:7,s:'a'},{n:8,s:'a'},null,
-                {n:9,s:'o'},{n:10,s:'o'},{n:11,s:'a'},{n:12,s:'a'}
-            ]},
-            { label: 'B', section: 'Platea Central', seats: [
-                {n:1,s:'a'},{n:2,s:'o'},{n:3,s:'o'},{n:4,s:'a'},null,
-                {n:5,s:'a'},{n:6,s:'a'},{n:7,s:'a'},{n:8,s:'a'},null,
-                {n:9,s:'b'},{n:10,s:'b'},{n:11,s:'a'},{n:12,s:'a'}
-            ]},
-            { label: 'C', section: 'Platea Central', seats: [
-                {n:1,s:'a'},{n:2,s:'a'},{n:3,s:'a'},{n:4,s:'a'},null,
-                {n:5,s:'a'},{n:6,s:'a'},{n:7,s:'a'},{n:8,s:'a'},null,
-                {n:9,s:'a'},{n:10,s:'a'},{n:11,s:'a'},{n:12,s:'a'}
-            ]},
-            { label: 'D', section: 'Platea Central', seats: [
-                {n:1,s:'a'},{n:2,s:'a'},{n:3,s:'a'},{n:4,s:'a'},null,
-                {n:5,s:'a'},{n:6,s:'a'},{n:7,s:'a'},{n:8,s:'a'},null,
-                {n:9,s:'a'},{n:10,s:'a'},{n:11,s:'a'},{n:12,s:'a'}
-            ]},
-            { label: 'E', section: 'Platea Alta', seats: [
-                {n:1,s:'o'},{n:2,s:'o'},{n:3,s:'o'},{n:4,s:'o'},null,
-                {n:5,s:'a'},{n:6,s:'a'},{n:7,s:'a'},{n:8,s:'a'},null,
-                {n:9,s:'o'},{n:10,s:'o'},{n:11,s:'o'},{n:12,s:'o'}
-            ]}
-        ],
-        pricePerSeat: {{ $event['price_from'] }},
+        rows: @js($seatRows),
         fee: 3500,
         toggleSeat(rowIdx, seatIdx) {
             const seat = this.rows[rowIdx].seats[seatIdx];
@@ -100,14 +73,16 @@
             const result = [];
             this.rows.forEach(row => {
                 row.seats.forEach(seat => {
-                    if (seat && seat.s === 'sel') result.push({ row: row.label, num: seat.n, section: row.section });
+                    if (seat && seat.s === 'sel') {
+                        result.push({ id: seat.id, row: row.label, num: seat.n, section: row.section, precio: seat.precio });
+                    }
                 });
             });
             return result;
         },
-        get subtotal() { return this.selected.length * this.pricePerSeat; },
-        get total() { return this.subtotal + (this.selected.length > 0 ? this.fee : 0); },
-        fmt(n) { return '$ ' + n.toLocaleString('es-CO'); }
+        get subtotal() { return this.selected.reduce((sum, s) => sum + s.precio, 0); },
+        get total()    { return this.subtotal + (this.selected.length > 0 ? this.fee : 0); },
+        fmt(n) { return '$ ' + Math.round(n).toLocaleString('es-CO'); }
      }"
      class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-16 py-12 grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
 
@@ -176,7 +151,7 @@
                         Selecciona tus asientos en el mapa
                     </p>
                 </template>
-                <template x-for="seat in selected" :key="seat.row + seat.num">
+                <template x-for="seat in selected" :key="seat.id">
                     <div class="flex justify-between items-center bg-surface-container-highest/50 p-4 rounded-xl">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-lg bg-tertiary-container flex items-center justify-center text-on-tertiary-container shrink-0">
@@ -188,7 +163,7 @@
                                 <p class="font-label-sm text-label-sm text-on-surface-variant" x-text="seat.section"></p>
                             </div>
                         </div>
-                        <span class="font-label-lg text-label-lg text-on-surface shrink-0" x-text="fmt(pricePerSeat)"></span>
+                        <span class="font-label-lg text-label-lg text-on-surface shrink-0" x-text="fmt(seat.precio)"></span>
                     </div>
                 </template>
             </div>
@@ -211,22 +186,14 @@
                 </div>
             </div>
 
-            {{-- CTA — form oculto que serializa los asientos seleccionados --}}
+            {{-- CTA — serializa solo los ids de evento_asiento --}}
             <form method="POST" action="{{ route('checkout.init', $event['slug']) }}"
                   @submit.prevent="
-                      $el.querySelector('[name=seats]').value = JSON.stringify(
-                          selected.map(s => ({ row: s.row, num: s.num, section: s.section }))
-                      );
+                      $el.querySelector('[name=seats]').value = JSON.stringify(selected.map(s => s.id));
                       $el.submit();
                   ">
                 @csrf
                 <input type="hidden" name="seats">
-                <input type="hidden" name="event_title" value="{{ $event['title'] }}">
-                <input type="hidden" name="event_date"  value="{{ \Carbon\Carbon::parse($event['showtimes'][0]['date'])->translatedFormat('j \\d\\e F \\d\\e Y') }}">
-                <input type="hidden" name="event_time"  value="{{ $event['showtimes'][0]['time'] }}">
-                <input type="hidden" name="venue"       value="{{ $event['venue'] }}">
-                <input type="hidden" name="city"        value="{{ $event['city'] }}">
-                <input type="hidden" name="price"       value="{{ $event['price_from'] }}">
 
                 <button
                     type="submit"
