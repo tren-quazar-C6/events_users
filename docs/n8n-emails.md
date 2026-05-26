@@ -64,7 +64,13 @@ Respuestas:
 
 ## El workflow en n8n
 
-URL del editor: <https://metafusion.app.n8n.cloud/workflow/RRg1cdBIkfLIPWV9>
+**Estado:** activo en producción (publicado el 2026-05-26).
+
+URLs:
+- Editor: <https://metafusion.app.n8n.cloud/workflow/RRg1cdBIkfLIPWV9>
+- Ejecuciones: <https://metafusion.app.n8n.cloud/workflow/RRg1cdBIkfLIPWV9/executions>
+- Webhook producción: `https://metafusion.app.n8n.cloud/webhook/232070c2-edff-46e9-91b9-bbc8c214b142`
+- Webhook test (editor abierto): `https://metafusion.app.n8n.cloud/webhook-test/232070c2-edff-46e9-91b9-bbc8c214b142`
 
 Nodos (en orden):
 
