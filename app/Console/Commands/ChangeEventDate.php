@@ -2,11 +2,10 @@
 
 namespace App\Console\Commands;
 
-use App\Mail\EventDateChanged;
+use App\Jobs\SendEmailViaN8n;
 use App\Models\Evento;
 use App\Models\Favorito;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Mail;
 
 class ChangeEventDate extends Command
 {
@@ -43,7 +42,20 @@ class ChangeEventDate extends Command
         }
 
         foreach ($usuarios as $user) {
-            Mail::to($user)->send(new EventDateChanged($user, $evento, $oldDate, $newDate));
+            $html = view('emails.event-date-changed', [
+                'user'    => $user,
+                'evento'  => $evento,
+                'oldDate' => $oldDate,
+                'newDate' => $newDate,
+            ])->render();
+
+            SendEmailViaN8n::dispatch(
+                type: 'event_date_changed',
+                to: $user->email,
+                subject: "Cambio de fecha · {$evento->nombre_evento}",
+                html: $html,
+                meta: ['user_id' => $user->id, 'evento_id' => $evento->id],
+            );
         }
 
         $this->info("Correos encolados para {$usuarios->count()} usuario(s).");

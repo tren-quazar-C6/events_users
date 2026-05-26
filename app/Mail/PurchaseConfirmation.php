@@ -9,6 +9,9 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
+// Nota: el envío real lo hace n8n vía App\Jobs\SendEmailViaN8n.
+// Esta clase se conserva solo como referencia de la vista/subject y para un
+// posible fallback con Mail::send($mailable) si n8n cae.
 class PurchaseConfirmation extends Mailable
 {
     use Queueable, SerializesModels;
