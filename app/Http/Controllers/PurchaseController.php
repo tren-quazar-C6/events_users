@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\PurchaseConfirmation;
+use App\Jobs\SendEmailViaN8n;
 use App\Models\EstadoTicket;
 use App\Models\Evento;
 use App\Models\EventoAsiento;
@@ -12,7 +12,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -138,8 +137,17 @@ class PurchaseController extends Controller
 
         session()->forget("checkout:{$token}");
 
-        $venta->load('tickets.eventoAsiento.asiento.zona', 'tickets.eventoAsiento.evento');
-        Mail::to(Auth::user())->send(new PurchaseConfirmation($venta));
+        $venta->load('tickets.eventoAsiento.asiento.zona', 'tickets.eventoAsiento.evento', 'user');
+
+        $html = view('emails.purchase-confirmation', ['venta' => $venta])->render();
+
+        SendEmailViaN8n::dispatch(
+            type: 'purchase_confirmation',
+            to: $venta->user->email,
+            subject: "Confirmación de compra · {$venta->referencia_interna}",
+            html: $html,
+            meta: ['venta_id' => $venta->id, 'user_id' => $venta->user_id],
+        );
 
         return redirect()->route('purchase.confirmation', $venta->referencia_interna);
     }

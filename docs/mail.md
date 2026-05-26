@@ -1,43 +1,45 @@
 # Sistema de correos
 
-## Decisión de diseño — dev vs producción
+> **El envío de correo ya no pasa por el mailer de Laravel.** Desde la migración a n8n, Laravel solo renderiza el Blade a HTML y lo manda a un webhook. El transporte SMTP lo gestiona n8n.
+>
+> Ver documentación completa del pipeline en [`docs/n8n-emails.md`](./n8n-emails.md).
 
-El sistema de correos tiene dos capas independientes:
+## Resumen del flujo actual
 
-1. **El transporte** — quién entrega el email (varía por entorno)
-2. **La cola** — cuándo se entrega (siempre asíncrono)
+```
+Controller / Command
+       │  view(...)->render()
+       │  SendEmailViaN8n::dispatch(to, subject, html)
+       ▼
+  tabla `jobs` (queue database)
+       │
+       ▼
+  php artisan queue:work
+       │  HTTP POST → N8N_EMAIL_WEBHOOK_URL
+       ▼
+  n8n cloud (workflow email_automation)
+       │
+       ▼
+  SMTP → Mailpit (dev) / proveedor real (prod)
+```
 
-Ambas se configuran exclusivamente en `.env`. El código PHP no cambia entre entornos.
+La cola de Laravel sigue en uso — `ShouldQueue` vive en `App\Jobs\SendEmailViaN8n`, no en los Mailables. Los Mailables (`PurchaseConfirmation`, `EventDateChanged`) conservan solo la referencia a la vista y el `envelope()`, sin `implements ShouldQueue`.
 
 ---
 
-## Transporte local — Mailpit
+## Transporte
 
-En desarrollo se usa [Mailpit](https://github.com/axllent/mailpit), un servidor SMTP trampa que corre en Docker. Intercepta todos los emails enviados por la app y los muestra en una bandeja web en `http://localhost:8025`. Ningún email sale a internet.
+### Dev — Mailpit
 
-```ini
-MAIL_MAILER=smtp
-MAIL_HOST=127.0.0.1
-MAIL_PORT=1025
-MAIL_USERNAME=null
-MAIL_PASSWORD=null
-MAIL_ENCRYPTION=null
-MAIL_FROM_ADDRESS="tickify@local.dev"
-MAIL_FROM_NAME="Tickify"
+[Mailpit](https://github.com/axllent/mailpit) corre en Docker. Intercepta todos los correos. Bandeja en `http://localhost:8025`.
+
+```bash
+# desde events_infrastructure/
+docker compose up -d mailpit
 ```
 
-### Por qué Mailpit y no otra opción
-
-| Alternativa | Por qué no |
-|---|---|
-| `MAIL_MAILER=log` | Los emails solo se ven en `storage/logs/laravel.log`. No hay forma de ver el HTML renderizado ni probar el diseño. |
-| Mailtrap.io | Requiere cuenta externa, credenciales de equipo compartidas y conexión a internet. Agrega fricción innecesaria para dev local. |
-| Gmail SMTP | Requiere App Password, 2FA, y los emails quedan en una bandeja real. Arriesgado para testing automatizado. |
-| MailHog | Alternativa válida, pero sin mantenimiento activo desde 2022. Mailpit es su sucesor directo. |
-
-Mailpit corre como un servicio más en `events_infrastructure/docker-compose.yml`:
-
 ```yaml
+# events_infrastructure/docker-compose.yml
 mailpit:
   image: axllent/mailpit
   container_name: quasar_mailpit
@@ -49,109 +51,67 @@ mailpit:
     - quasar_network
 ```
 
-Para levantarlo:
-```bash
-# desde events_infrastructure/
-docker compose up -d mailpit
-```
+**Nota importante:** n8n cloud no puede llegar al `localhost` de tu máquina. Para ver los correos en Mailpit necesitas o bien correr n8n en Docker local, o exponer el puerto 1025 con un túnel (ngrok). Ver [`docs/n8n-emails.md#dev-local`](./n8n-emails.md#dev-local----cómo-probar) para las tres opciones.
 
----
-
-## Transporte producción
-
-Para pasar a producción solo se cambian las variables de entorno en el servidor. 
+Las variables de `.env` para Mailpit aplican solo si alguna vez usas `Mail::send(new MiMailable())` directamente (fallback manual). El job de n8n no las usa.
 
 ```ini
 MAIL_MAILER=smtp
-MAIL_HOST=smtp.resend.com        # o SendGrid, Mailgun, Gmail, etc.
-MAIL_PORT=465
-MAIL_USERNAME=resend
-MAIL_PASSWORD=re_TU_API_KEY
-MAIL_ENCRYPTION=tls
-MAIL_FROM_ADDRESS="noreply@tudominio.com"
+MAIL_HOST=127.0.0.1
+MAIL_PORT=1025
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_FROM_ADDRESS="tickify@local.dev"
 MAIL_FROM_NAME="Tickify"
 ```
 
-futura implementacion con resend.
+### Prod — proveedor SMTP
+
+Se configura en la credencial **`Tickify SMTP`** dentro de n8n cloud. El `.env` del backend no tiene nada de SMTP para prod; todo está en el panel de n8n.
+
+Opciones documentadas como candidatas: Resend, SendGrid, Mailgun.
 
 ---
 
-## Cola asíncrona
+## Cola
 
-### Por qué la cola
+### Variables `.env` relevantes
 
-reducir tiempos de cargas para renderizado de vistas y poder poner a funcionar el servicio con un worker
-para el sistema de cola, futura implementacion con un worker
-
-### Implementación
-
-`PurchaseConfirmation` implementa `ShouldQueue`. Laravel detecta la interfaz automáticamente cuando se llama `send()`:
-
-```php
-// app/Mail/PurchaseConfirmation.php
-class PurchaseConfirmation extends Mailable implements ShouldQueue
-{
-    use Queueable, SerializesModels;
-    // ...
-}
-
-// app/Http/Controllers/PurchaseController.php
-Mail::to(Auth::user())->send(new PurchaseConfirmation($venta));
-// ↑ encola el job porque el Mailable implementa ShouldQueue
+```ini
+QUEUE_CONNECTION=database
+APP_URL=http://localhost:8000   # incluir el puerto siempre en dev
 ```
 
-El driver de cola es `database` (`.env: QUEUE_CONNECTION=database`). Los jobs se almacenan en la tabla `jobs`.
-
-### Worker en desarrollo
+### Correr el worker
 
 ```bash
 php artisan queue:work
 ```
 
-Debe correr en una terminal separada mientras se desarrolla. Sin él, los jobs se acumulan en la tabla `jobs` pero ningún email se envía.
+**Reiniciar el worker** después de cualquier cambio de código. Carga la app en memoria al arrancar.
 
-> **Reiniciar el worker es obligatorio** después de cualquier cambio de código o configuración.
-> El worker carga la app en memoria al arrancar — los cambios posteriores no se aplican hasta reiniciarlo.
-
-### APP_URL y links en el email
-
-Los links dentro del email se generan en el worker (sin request HTTP activo). Laravel usa `APP_URL` como base para `route()` en ese contexto. Para `php artisan serve`, el puerto debe estar incluido:
-
-```ini
-APP_URL=http://localhost:8000
-```
-
-`AppServiceProvider::boot()` llama `URL::forceRootUrl(config('app.url'))` para que tanto el worker como los redirects de HTTP usen siempre la misma base URL.
-
-Para procesar un único job puntual sin dejar el worker corriendo:
+Para un único job puntual:
 
 ```bash
 php artisan queue:work --once
 ```
 
-Para ver los jobs pendientes:
+### Jobs fallidos
 
 ```bash
-php artisan queue:monitor
+php artisan queue:failed
+php artisan queue:retry all
+php artisan queue:flush        # descarta todo — peligroso
 ```
 
----
+Si el webhook de n8n no responde 2xx después de 3 intentos (backoff: 10s, 30s, 60s), el job cae en `failed_jobs` con el mensaje de error. `queue:retry all` lo reprocesa cuando n8n vuelva.
 
-## Supervisor en producción
+### Supervisor en producción
 
-En producción el worker no puede correr manualmente. [Supervisor](http://supervisord.org/) es un daemon de Linux que arranca el worker al boot y lo reinicia si muere.
-
-### Instalación
-
-```bash
-sudo apt install supervisor
-```
-
-### Configuración
-
-Crear `/etc/supervisor/conf.d/tickify-worker.conf`:
+El worker necesita mantenerse vivo con Supervisor:
 
 ```ini
+# /etc/supervisor/conf.d/tickify-worker.conf
 [program:tickify-worker]
 process_name=%(program_name)s_%(process_num)02d
 command=php /var/www/events_users/artisan queue:work --sleep=3 --tries=3 --max-time=3600
@@ -166,61 +126,20 @@ stdout_logfile=/var/www/events_users/storage/logs/worker.log
 stopwaitsecs=3600
 ```
 
-Activar y arrancar:
-
 ```bash
 sudo supervisorctl reread
 sudo supervisorctl update
 sudo supervisorctl start tickify-worker:*
 ```
 
-### Parámetros clave del comando
-
-| Flag | Valor | Significado |
-|---|---|---|
-| `--sleep=3` | 3s | Tiempo de espera entre polls cuando la cola está vacía |
-| `--tries=3` | 3 | Intentos antes de marcar un job como fallido |
-| `--max-time=3600` | 1h | El worker se reinicia solo cada hora para liberar memoria |
-
-### Jobs fallidos
-
-Si un email falla los 3 intentos, el job pasa a la tabla `failed_jobs`. Para inspeccionarlos:
-
-```bash
-php artisan queue:failed
-```
-
-Para reintentar todos los fallidos:
-
-```bash
-php artisan queue:retry all
-```
-
 ---
 
-## Flujo completo
+## APP_URL y links en los correos
 
+El Blade se renderiza en el contexto HTTP del controller, no en el worker, así que `route()` ya tiene el host correcto. `AppServiceProvider::boot()` sigue llamando `URL::forceRootUrl(config('app.url'))` como capa extra de seguridad.
+
+```ini
+APP_URL=http://localhost:8000   # incluir :8000 para php artisan serve
 ```
-Usuario confirma pago
-        │
-        ▼
-PurchaseController::confirmCheckout()
-        │  crea Purchase + Tickets en BD
-        │
-        └─ Mail::to($user)->send(new PurchaseConfirmation($venta))
-                │
-                │ detecta ShouldQueue → no abre SMTP
-                ▼
-          INSERT en tabla jobs (~5ms)
-                │
-        HTTP response → redirige a /confirmation
-                │
-                │ (proceso separado)
-                ▼
-        php artisan queue:work
-                │
-                └─ deserializa Venta → renderiza Blade
-                           │
-                           ▼
-                   conexión SMTP → Mailpit (dev) / Resend (prod)
-```
+
+Si los links del correo aparecen sin el puerto, este es el problema.
