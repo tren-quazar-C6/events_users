@@ -13,7 +13,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-// ─── Públicas ───────────────────────────────────────────────────────────────
+
 Route::get('/', fn () => view('home'))->name('home');
 Route::get('/catalog', fn () => view('catalog'))->name('catalog');
 
