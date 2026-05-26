@@ -4,13 +4,29 @@
         "slug": "el-rey-leon",
         "title": "El Rey León",
         "category": "Musical",
-        "synopsis": "El épico musical de Disney llega a Medellín con su impresionante puesta en escena, máscaras icónicas y una banda sonora que ha conquistado al mundo.",
+        "author": "Elton John & Tim Rice",
+        "duration": "2h 45min",
+        "synopsis": [
+            "El épico musical de Disney llega a Medellín con su impresionante puesta en escena, máscaras icónicas y una banda sonora que ha conquistado al mundo.",
+            "Con coreografías espectaculares y diseño de vestuario de Julie Taymor, esta producción es un viaje sensorial a las praderas africanas que no olvidarás."
+        ],
         "poster_color": "#F4B895",
         "price_from": 120000,
+        "venue": "Teatro Metropolitano",
+        "city": "Medellín",
         "showtimes": [
-            { "date": "2026-05-22", "time": "20:00" },
-            { "date": "2026-05-23", "time": "16:00" },
-            { "date": "2026-05-23", "time": "20:00" }
+            {
+                "date": "2026-07-22",
+                "time": "20:00"
+            },
+            {
+                "date": "2026-05-23",
+                "time": "16:00"
+            },
+            {
+                "date": "2026-05-23",
+                "time": "20:00"
+            }
         ]
     },
     {
@@ -18,12 +34,25 @@
         "slug": "hamlet",
         "title": "Hamlet",
         "category": "Drama",
-        "synopsis": "La obra cumbre de Shakespeare en una versión íntima y contemporánea. Una exploración del duelo, la venganza y la duda existencial.",
+        "author": "William Shakespeare",
+        "duration": "2h 30min",
+        "synopsis": [
+            "La obra cumbre de Shakespeare en una versión íntima y contemporánea. Una exploración del duelo, la venganza y la duda existencial.",
+            "Un príncipe atrapado entre el deber y la parálisis, en una corte donde nadie es inocente y la verdad tiene un precio."
+        ],
         "poster_color": "#2D4A3E",
         "price_from": 65000,
+        "venue": "Teatro Metropolitano",
+        "city": "Medellín",
         "showtimes": [
-            { "date": "2026-05-24", "time": "19:30" },
-            { "date": "2026-05-25", "time": "19:30" }
+            {
+                "date": "2026-05-24",
+                "time": "19:30"
+            },
+            {
+                "date": "2026-05-25",
+                "time": "19:30"
+            }
         ]
     },
     {
@@ -31,13 +60,29 @@
         "slug": "madagascar-live",
         "title": "Madagascar Live!",
         "category": "Infantil",
-        "synopsis": "Alex, Marty, Gloria y Melman llegan en vivo para una aventura llena de música, baile y diversión para toda la familia.",
+        "author": "DreamWorks Animation",
+        "duration": "1h 30min",
+        "synopsis": [
+            "Alex, Marty, Gloria y Melman llegan en vivo para una aventura llena de música, baile y diversión para toda la familia.",
+            "Un espectáculo lleno de color, humor y canciones que harán bailar a grandes y pequeños desde el primer minuto."
+        ],
         "poster_color": "#C4E0D0",
         "price_from": 45000,
+        "venue": "Teatro Metropolitano",
+        "city": "Medellín",
         "showtimes": [
-            { "date": "2026-05-21", "time": "11:00" },
-            { "date": "2026-05-21", "time": "15:00" },
-            { "date": "2026-05-22", "time": "11:00" }
+            {
+                "date": "2026-05-21",
+                "time": "11:00"
+            },
+            {
+                "date": "2026-05-21",
+                "time": "15:00"
+            },
+            {
+                "date": "2026-05-22",
+                "time": "11:00"
+            }
         ]
     },
     {
@@ -45,11 +90,21 @@
         "slug": "stand-up-night",
         "title": "Stand-up Comedy Night",
         "category": "Comedia",
-        "synopsis": "Los mejores comediantes paisas en una noche de risas garantizadas. No apta para amargados.",
+        "author": "Varios artistas",
+        "duration": "1h 45min",
+        "synopsis": [
+            "Los mejores comediantes paisas en una noche de risas garantizadas. No apta para amargados.",
+            "Cada función es un universo distinto: humor ácido, observacional y absurdo en perfecta combinación."
+        ],
         "poster_color": "#E89B8C",
         "price_from": 35000,
+        "venue": "Teatro Metropolitano",
+        "city": "Medellín",
         "showtimes": [
-            { "date": "2026-05-23", "time": "21:00" }
+            {
+                "date": "2026-05-23",
+                "time": "21:00"
+            }
         ]
     },
     {
@@ -57,12 +112,25 @@
         "slug": "bernarda-alba",
         "title": "La Casa de Bernarda Alba",
         "category": "Drama",
-        "synopsis": "Lorca en su máxima expresión. Una madre, cinco hijas, una casa convertida en cárcel. Pasiones que arden bajo el luto.",
+        "author": "Federico García Lorca",
+        "duration": "2h 00min",
+        "synopsis": [
+            "Lorca en su máxima expresión. Una madre, cinco hijas, una casa convertida en cárcel. Pasiones que arden bajo el luto.",
+            "Una de las piezas más poderosas del teatro universal, donde el silencio y la represión estallan en una tragedia inevitable."
+        ],
         "poster_color": "#7BB394",
         "price_from": 55000,
+        "venue": "Teatro Metropolitano",
+        "city": "Medellín",
         "showtimes": [
-            { "date": "2026-05-25", "time": "20:00" },
-            { "date": "2026-05-26", "time": "20:00" }
+            {
+                "date": "2026-05-25",
+                "time": "20:00"
+            },
+            {
+                "date": "2026-05-26",
+                "time": "20:00"
+            }
         ]
     },
     {
@@ -70,12 +138,25 @@
         "slug": "chicago",
         "title": "Chicago",
         "category": "Musical",
-        "synopsis": "Jazz, asesinato y celebridad. El musical de Broadway sobre la fama y el escándalo de los años veinte.",
+        "author": "John Kander & Fred Ebb",
+        "duration": "2h 15min",
+        "synopsis": [
+            "Jazz, asesinato y celebridad. El musical de Broadway sobre la fama y el escándalo de los años veinte.",
+            "Velma Kelly y Roxie Hart compiten por los titulares en el Chicago de la Ley Seca, donde todo es espectáculo y nada es lo que parece."
+        ],
         "poster_color": "#2D4A3E",
         "price_from": 95000,
+        "venue": "Teatro Metropolitano",
+        "city": "Medellín",
         "showtimes": [
-            { "date": "2026-05-27", "time": "20:00" },
-            { "date": "2026-05-28", "time": "20:00" }
+            {
+                "date": "2026-05-27",
+                "time": "20:00"
+            },
+            {
+                "date": "2026-05-28",
+                "time": "20:00"
+            }
         ]
     },
     {
@@ -83,12 +164,25 @@
         "slug": "mago-de-oz",
         "title": "El Mago de Oz",
         "category": "Infantil",
-        "synopsis": "Dorothy y sus amigos en una nueva aventura por el camino amarillo. Música, color y mensaje de amistad para los más chicos.",
+        "author": "L. Frank Baum",
+        "duration": "1h 40min",
+        "synopsis": [
+            "Dorothy y sus amigos en una nueva aventura por el camino amarillo. Música, color y mensaje de amistad para los más chicos.",
+            "Un viaje mágico que demuestra que el hogar y el coraje siempre están más cerca de lo que creemos."
+        ],
         "poster_color": "#F4B895",
         "price_from": 40000,
+        "venue": "Teatro Metropolitano",
+        "city": "Medellín",
         "showtimes": [
-            { "date": "2026-05-29", "time": "11:00" },
-            { "date": "2026-05-29", "time": "15:00" }
+            {
+                "date": "2026-05-29",
+                "time": "11:00"
+            },
+            {
+                "date": "2026-05-29",
+                "time": "15:00"
+            }
         ]
     },
     {
@@ -96,12 +190,25 @@
         "slug": "improvisacion-total",
         "title": "Improvisación Total",
         "category": "Comedia",
-        "synopsis": "Show de improvisación 100% en vivo. El público propone, los actores ejecutan. Cada función es única e irrepetible.",
+        "author": "Colectivo Impro Medellín",
+        "duration": "1h 30min",
+        "synopsis": [
+            "Show de improvisación 100% en vivo. El público propone, los actores ejecutan. Cada función es única e irrepetible.",
+            "Sin guión, sin ensayo, solo talento puro y la energía del público como combustible. La comedia en su estado más honesto."
+        ],
         "poster_color": "#C4E0D0",
         "price_from": 30000,
+        "venue": "Teatro Metropolitano",
+        "city": "Medellín",
         "showtimes": [
-            { "date": "2026-05-24", "time": "21:00" },
-            { "date": "2026-05-31", "time": "21:00" }
+            {
+                "date": "2026-05-24",
+                "time": "21:00"
+            },
+            {
+                "date": "2026-05-31",
+                "time": "21:00"
+            }
         ]
     }
 ]

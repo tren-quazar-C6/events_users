@@ -40,4 +40,6 @@ return [
         ],
     ],
 
+    'tickets_api_secret' => env('TICKETS_API_SECRET'),
+
 ];

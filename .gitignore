@@ -1,27 +1,54 @@
-*.log
-.DS_Store
+# ── Entorno y secretos ──────────────────────────────────
 .env
 .env.backup
 .env.production
-.phpactor.json
-.phpunit.result.cache
-/.codex
-/.cursor/
-/.idea
-/.nova
-/.phpunit.cache
-/.vscode
-/.zed
 /auth.json
+
+# ── Base de datos local ──────────────────────────────────
+/database/*.sqlite
+/database/*.sqlite-shm
+/database/*.sqlite-wal
+
+# ── Dependencias ────────────────────────────────────────
 /node_modules
+/vendor
+
+# ── Assets compilados ───────────────────────────────────
 /public/build
-/public/fonts-manifest.dev.json
 /public/hot
 /public/storage
+/public/fonts-manifest.dev.json
+
+# ── Laravel runtime ─────────────────────────────────────
+*.log
 /storage/*.key
 /storage/pail
-/vendor
+/bootstrap/cache/*.php
+
+# ── Tests ────────────────────────────────────────────────
+.phpunit.result.cache
+/.phpunit.cache
+
+# ── Archivos personales de Claude Code ──────────────────
+CLAUDE.local.md
+.claude/
+
+# ── Documentación local de estudio y planes de trabajo ──
+/docsStudio
+/DEV3-PLAN.md
+
+# ── IDEs y editores ──────────────────────────────────────
+.DS_Store
+Thumbs.db
+/.idea
+/.vscode
+/.cursor/
+/.nova
+/.zed
+/.codex
+.phpactor.json
 _ide_helper.php
+
+# ── Entornos Homestead / Vagrant ────────────────────────
 Homestead.json
 Homestead.yaml
-Thumbs.db

@@ -2,59 +2,47 @@
 
 namespace App\Livewire;
 
-use App\Models\Favorite;
+use App\Models\Favorito;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class FavoriteButton extends Component
 {
-    // El slug del evento al que pertenece este botón.
-    // Se pasa desde la vista padre: <livewire:favorite-button :slug="..." />
-    public string $slug;
+    public int $eventoId;
+    public bool $isFavorited = false;
 
-    // Estado local del botón
-    public bool $isFavorite = false;
-
-    /**
-     * mount() corre UNA vez al montar el componente.
-     * Aquí preguntamos a la BD si ya es favorito.
-     */
-    public function mount(string $slug)
+    public function mount(int $eventoId): void
     {
-        $this->slug = $slug;
+        $this->eventoId = $eventoId;
 
-        if (auth()->check()) {
-            $this->isFavorite = auth()->user()
-                ->favorites()
-                ->where('event_slug', $slug)
+        if (Auth::check()) {
+            $this->isFavorited = Auth::user()
+                ->favoritos()
+                ->where('evento_id', $eventoId)
                 ->exists();
         }
     }
 
-    /**
-     * Toggle del favorito. Se llama con wire:click="toggle".
-     */
     public function toggle()
     {
-        // Si no está logueado, lo mandamos a login.
-        if (! auth()->check()) {
+        if (! Auth::check()) {
             return redirect()->route('login');
         }
 
-        $user = auth()->user();
+        $user = Auth::user();
 
-        if ($this->isFavorite) {
-            // Ya era favorito → quitarlo
-            $user->favorites()->where('event_slug', $this->slug)->delete();
-            $this->isFavorite = false;
+        if ($this->isFavorited) {
+            $user->favoritos()->where('evento_id', $this->eventoId)->delete();
+            $this->isFavorited = false;
         } else {
-            // No era favorito → agregarlo
-            // firstOrCreate evita duplicados aunque haya doble clic rápido.
-            Favorite::firstOrCreate([
-                'user_id'    => $user->id,
-                'event_slug' => $this->slug,
+            Favorito::firstOrCreate([
+                'user_id' => $user->id,
+                'evento_id' => $this->eventoId,
             ]);
-            $this->isFavorite = true;
+            $this->isFavorited = true;
         }
+
+        $this->dispatch('favorites-changed');
     }
 
     public function render()

@@ -1,0 +1,100 @@
+{
+    "featured": {
+        "hero": {
+            "id": 1,
+            "title": "Los Miserables: El Musical",
+            "badge": "Más Popular",
+            "description": "Una producción épica que redefine el clásico de Víctor Hugo.",
+            "image": null
+        },
+        "grid": [
+            {
+                "id": 2,
+                "title": "Ecos del Silencio",
+                "category": "Danza Moderna",
+                "meta": "12 - 24 Jun",
+                "meta_icon": "calendar_today",
+                "image": null
+            },
+            {
+                "id": 3,
+                "title": "No Hay Drama",
+                "category": "Comedia",
+                "meta": "Teatro Cervantes",
+                "meta_icon": "location_on",
+                "image": null
+            }
+        ]
+    },
+    "upcoming": [
+        {
+            "id": 4,
+            "title": "Bodas de Sangre",
+            "subtitle": "Federico García Lorca · Teatro Mayor Julio Mario Santo Domingo",
+            "category": "Teatro Clásico",
+            "author": "Federico García Lorca",
+            "venue": "Teatro Mayor Julio Mario Santo Domingo",
+            "city": "Bogotá",
+            "duration": "2h 30min",
+            "price": "45.000",
+            "day": "14",
+            "month": "JUN",
+            "times": ["19:30", "21:00"],
+            "synopsis": [
+                "Un pueblo andaluz, una boda condenada al fracaso. La Novia huye con Leonardo, el único hombre que ha amado, en la noche de sus esponsales. El Novio sale en su persecución y el destino, inexorable, arrastra a los tres hacia una conclusión violenta e inevitable.",
+                "Esta puesta en escena contemporánea utiliza una escenografía de tierra cruda y luz de luna para desnudar la tragedia lorquiana de todo artificio, devolviendo al texto su poder original: el de una naturaleza que sangra y no perdona."
+            ],
+            "dates": [
+                {"dow": "Vie", "day": "13", "month": "Jun"},
+                {"dow": "Sáb", "day": "14", "month": "Jun"},
+                {"dow": "Dom", "day": "15", "month": "Jun"}
+            ]
+        },
+        {
+            "id": 5,
+            "title": "El Rey León",
+            "subtitle": "Musical · Teatro Colón",
+            "category": "Musical",
+            "author": "Elton John · Tim Rice",
+            "venue": "Teatro Colón",
+            "city": "Bogotá",
+            "duration": "2h 45min",
+            "price": "85.000",
+            "day": "18",
+            "month": "JUN",
+            "times": ["20:00"],
+            "synopsis": [
+                "Simba nace para ser rey, pero cuando su padre Mufasa es asesinado por su tío Scar, el joven cachorro huye sintiéndose culpable. Años después, guiado por el espíritu de su padre y el amor de Nala, regresa para reclamar su lugar en el ciclo de la vida.",
+                "La producción colombiana trae por primera vez al Teatro Colón el espectáculo más taquillero de Broadway, con vestuario elaborado a mano por artesanos locales y una dirección musical en vivo que reinterpreta los clásicos con influencias del folclor nacional."
+            ],
+            "dates": [
+                {"dow": "Jue", "day": "17", "month": "Jun"},
+                {"dow": "Vie", "day": "18", "month": "Jun"},
+                {"dow": "Sáb", "day": "19", "month": "Jun"}
+            ]
+        },
+        {
+            "id": 6,
+            "title": "La Casa de Bernarda Alba",
+            "subtitle": "Federico García Lorca · Teatro Nacional",
+            "category": "Drama",
+            "author": "Federico García Lorca",
+            "venue": "Teatro Nacional",
+            "city": "Bogotá",
+            "duration": "1h 50min",
+            "price": "38.000",
+            "day": "22",
+            "month": "JUN",
+            "times": ["18:00", "20:30"],
+            "synopsis": [
+                "Tras la muerte de su segundo marido, Bernarda Alba impone ocho años de riguroso luto a sus cinco hijas, encerrándolas en una casa blanca que se convierte en cárcel. Adela, la menor, se rebela contra ese orden, y la tensión entre la represión y el deseo estalla en tragedia.",
+                "La directora utiliza el espacio vacío como herramienta dramática: una sala casi desnuda donde las paredes blancas se van tiñendo de sombra a medida que avanza la noche, convirtiendo la luz en el único personaje que nunca miente."
+            ],
+            "dates": [
+                {"dow": "Dom", "day": "22", "month": "Jun"},
+                {"dow": "Lun", "day": "23", "month": "Jun"},
+                {"dow": "Mar", "day": "24", "month": "Jun"}
+            ]
+        }
+    ]
+}

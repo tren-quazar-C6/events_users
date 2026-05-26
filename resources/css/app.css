@@ -4,10 +4,37 @@
 @source '../../vendor/laravel/jetstream/**/*.blade.php';
 @source '../../vendor/laravel/fortify/**/*.blade.php';
 @source '../../storage/framework/views/*.php';
+
 [x-cloak] { display: none !important; }
 
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+}
+
+.grain-overlay {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)'/%3E%3C/svg%3E");
+    opacity: 0.03;
+    pointer-events: none;
+}
+
+.spotlight-glow {
+    background: radial-gradient(circle at center, rgba(123, 179, 148, 0.15) 0%, transparent 70%);
+}
+
+.seat-grid {
+    perspective: 1000px;
+}
+
+.stage-curve {
+    border-bottom-left-radius: 50% 20%;
+    border-bottom-right-radius: 50% 20%;
+}
+
 @theme {
-    /* ===== COLORES DEL BRANDING ===== */
+    /* ─── Tickify legacy tokens (landing, auth) ─── */
     --color-sage:       #7BB394;
     --color-sage-light: #C4E0D0;
     --color-sage-dark:  #2D4A3E;
@@ -15,14 +42,92 @@
     --color-peach:      #F4B895;
     --color-coral:      #E89B8C;
 
-    /* ===== TIPOGRAFÍAS ===== */
-    --font-sans:    "DM Sans", system-ui, sans-serif;
-    --font-display: "Fraunces", serif;
+    /* ─── Butaca — superficies ─── */
+    --color-background:               #fcf9f4;
+    --color-surface:                  #fcf9f4;
+    --color-surface-dim:              #dcdad5;
+    --color-surface-bright:           #fcf9f4;
+    --color-surface-container-lowest: #ffffff;
+    --color-surface-container-low:    #f6f3ee;
+    --color-surface-container:        #f0ede9;
+    --color-surface-container-high:   #ebe8e3;
+    --color-surface-container-highest:#e5e2dd;
+    --color-surface-variant:          #e5e2dd;
+    --color-surface-tint:             #32694e;
+    --color-inverse-surface:          #31302d;
+    --color-inverse-on-surface:       #f3f0eb;
 
-    /* ===== RADIOS ===== */
+    /* ─── Butaca — texto sobre superficies ─── */
+    --color-on-background:            #1c1c19;
+    --color-on-surface:               #1c1c19;
+    --color-on-surface-variant:       #404943;
+
+    /* ─── Butaca — bordes ─── */
+    --color-outline:                  #707973;
+    --color-outline-variant:          #c0c9c1;
+
+    /* ─── Butaca — primario (sage green) ─── */
+    --color-primary:                  #32694e;
+    --color-on-primary:               #ffffff;
+    --color-primary-container:        #7bb394;
+    --color-on-primary-container:     #08452e;
+    --color-inverse-primary:          #9ad3b2;
+    --color-primary-fixed:            #b5f0ce;
+    --color-primary-fixed-dim:        #9ad3b2;
+    --color-on-primary-fixed:         #002113;
+    --color-on-primary-fixed-variant: #175037;
+
+    /* ─── Butaca — secundario (mint) ─── */
+    --color-secondary:                #4b6457;
+    --color-on-secondary:             #ffffff;
+    --color-secondary-container:      #cae6d6;
+    --color-on-secondary-container:   #4f685b;
+    --color-secondary-fixed:          #cde9d9;
+    --color-secondary-fixed-dim:      #b1cdbd;
+    --color-on-secondary-fixed:       #072016;
+    --color-on-secondary-fixed-variant:#334c40;
+
+    /* ─── Butaca — terciario (peach/terra) ─── */
+    --color-tertiary:                 #815437;
+    --color-on-tertiary:              #ffffff;
+    --color-tertiary-container:       #d39b7a;
+    --color-on-tertiary-container:    #5a3319;
+    --color-tertiary-fixed:           #ffdbc8;
+    --color-tertiary-fixed-dim:       #f6ba96;
+    --color-on-tertiary-fixed:        #321300;
+    --color-on-tertiary-fixed-variant:#663d22;
+
+    /* ─── Butaca — error ─── */
+    --color-error:                    #ba1a1a;
+    --color-on-error:                 #ffffff;
+    --color-error-container:          #ffdad6;
+    --color-on-error-container:       #93000a;
+
+    /* ─── Tipografías ─── */
+    --font-sans:        "DM Sans", system-ui, sans-serif;
+    --font-display:     "Fraunces", serif;
+    --font-headline:    "Bricolage Grotesque", system-ui, sans-serif;
+    --font-body:        "Plus Jakarta Sans", system-ui, sans-serif;
+    --font-headline-lg: "Bricolage Grotesque", system-ui, sans-serif;
+    --font-headline-md: "Bricolage Grotesque", system-ui, sans-serif;
+    --font-body-lg:     "Plus Jakarta Sans", system-ui, sans-serif;
+    --font-body-md:     "Plus Jakarta Sans", system-ui, sans-serif;
+    --font-label-lg:    "Plus Jakarta Sans", system-ui, sans-serif;
+    --font-label-sm:    "Plus Jakarta Sans", system-ui, sans-serif;
+
+    /* ─── Escala tipográfica ─── */
+    --text-display:     3rem;      /* 48px */
+    --text-headline-lg: 2rem;      /* 32px */
+    --text-headline-md: 1.5rem;    /* 24px */
+    --text-body-lg:     1.125rem;  /* 18px */
+    --text-body-md:     1rem;      /* 16px */
+    --text-label-lg:    0.875rem;  /* 14px */
+    --text-label-sm:    0.75rem;   /* 12px */
+
+    /* ─── Radios ─── */
     --radius-card: 16px;
     --radius-btn:  12px;
 
-    /* ===== SOMBRAS ===== */
+    /* ─── Sombras ─── */
     --shadow-soft: 0 2px 12px rgba(45, 74, 62, 0.08);
 }
