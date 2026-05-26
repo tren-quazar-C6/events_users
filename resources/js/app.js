@@ -1,13 +1,3 @@
-//
-import Alpine from 'alpinejs'
-
-window.Alpine = Alpine
-
-Alpine.start()
-
-// ============================================
-// Registrar el Service Worker para PWA
-// ============================================
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker

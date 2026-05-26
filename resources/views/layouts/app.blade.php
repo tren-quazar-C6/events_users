@@ -17,6 +17,7 @@
 
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"/>
 
+    @livewireStyles
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     @stack('head')
@@ -31,15 +32,13 @@
         @yield('content')
     </main>
 
-    {{-- @include('partials.footer')
-
-    @stack('scripts') --}}
-    
     @include('partials.footer')
 
-        {{-- Bottom navigation para móvil (PWA) --}}
-        @include('partials.bottom-nav')
+    {{-- Bottom navigation para móvil (PWA) --}}
+    @include('partials.bottom-nav')
 
-        @stack('scripts')
-    </body>
+    @livewireScripts
+
+    @stack('scripts')
+</body>
 </html>
