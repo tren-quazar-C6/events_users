@@ -46,16 +46,23 @@
 
     {{-- Próxima entrada --}}
     @if ($upcomingTickets->isNotEmpty())
-        @php $next = $upcomingTickets->first(); $nextEvento = $next->eventoAsiento->evento; $nextAsiento = $next->eventoAsiento->asiento; @endphp
+        @php
+            $next       = $upcomingTickets->sortBy(fn ($t) => $t->eventoAsiento->evento->fecha_evento)->first();
+            $nextEvento = $next->eventoAsiento->evento;
+            $nextAsiento= $next->eventoAsiento->asiento;
+        @endphp
         <div class="bg-sage-dark text-cream rounded-card shadow-soft p-6 mb-10">
             <p class="text-cream/70 text-sm">Tu próxima función</p>
             <h2 class="font-display text-3xl mt-1">{{ $nextEvento->nombre_evento }}</h2>
             <p class="mt-2 text-cream/80">
                 {{ $nextEvento->fecha_evento->translatedFormat('l j \d\e F') }}
                 · {{ $nextEvento->fecha_evento->format('H:i') }}
-                @if ($nextAsiento) · Fila {{ $nextAsiento->fila }}, Asiento {{ $nextAsiento->numero }} @endif
+                @if ($nextAsiento)
+                    · Fila {{ $nextAsiento->fila }}, Asiento {{ $nextAsiento->numero }}
+                @endif
             </p>
-            <a href="{{ route('dashboard.tickets') }}" class="inline-block mt-4 bg-cream text-sage-dark px-4 py-2 rounded-btn font-semibold hover:bg-white transition">
+            <a href="{{ route('dashboard.tickets') }}"
+               class="inline-block mt-4 bg-cream text-sage-dark px-4 py-2 rounded-btn font-semibold hover:bg-white transition">
                 Ver entrada
             </a>
         </div>
@@ -68,15 +75,18 @@
             <a href="{{ route('catalog') }}" class="text-sage font-semibold hover:underline">Ver todo →</a>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            @foreach ($events as $event)
-                <a href="{{ route('events.show', $event['slug']) }}" class="bg-white rounded-card shadow-soft overflow-hidden hover:shadow-lg transition">
+            @forelse ($events as $event)
+                <a href="{{ route('events.show', $event['slug']) }}"
+                   class="bg-white rounded-card shadow-soft overflow-hidden hover:shadow-lg transition">
                     <div class="aspect-[4/3]" style="background-color: {{ $event['poster_color'] }}"></div>
                     <div class="p-4">
                         <p class="text-xs text-sage-dark/60">{{ $event['category'] }}</p>
                         <p class="font-display text-lg text-sage-dark mt-1">{{ $event['title'] }}</p>
                     </div>
                 </a>
-            @endforeach
+            @empty
+                <p class="col-span-3 text-sm text-sage-dark/60">No hay eventos disponibles.</p>
+            @endforelse
         </div>
     </div>
 @endsection

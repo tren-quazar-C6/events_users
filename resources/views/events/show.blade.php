@@ -47,7 +47,7 @@
             </div>
 
             <p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed max-w-xl">
-                {{ $event['synopsis'][0] }}
+                {{ $event['synopsis'][0] ?? '' }}
             </p>
         </div>
 

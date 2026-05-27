@@ -1,3 +1,9 @@
+// Alpine is bundled and started automatically by Livewire 3.
+// Do NOT import or start it manually here — it causes a double-init conflict.
+
+// ============================================
+// Registrar el Service Worker para PWA
+// ============================================
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker
