@@ -24,7 +24,12 @@ class SendEmailViaN8n implements ShouldQueue
         public string $subject,
         public string $html,
         public array  $meta = [],
-    ) {}
+        public string $from = '',
+    ) {
+        if (empty($this->from)) {
+            $this->from = config('services.n8n.email_from', 'onboarding@resend.dev');
+        }
+    }
 
     public function handle(): void
     {
@@ -34,12 +39,19 @@ class SendEmailViaN8n implements ShouldQueue
             throw new RuntimeException('N8N_EMAIL_WEBHOOK_URL no está configurado.');
         }
 
+        $recipient = $this->to;
+        $devOverride = config('services.n8n.dev_recipient');
+        if (app()->environment() !== 'production' && !empty($devOverride)) {
+            $recipient = $devOverride;
+        }
+
         $response = Http::timeout(10)
             ->acceptJson()
             ->asJson()
             ->post($url, [
                 'type'    => $this->type,
-                'to'      => $this->to,
+                'from'    => $this->from,
+                'to'      => $recipient,
                 'subject' => $this->subject,
                 'html'    => $this->html,
                 'meta'    => $this->meta,

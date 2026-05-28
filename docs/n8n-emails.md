@@ -35,7 +35,7 @@ PurchaseController::confirmCheckout()          ChangeEventDate (artisan)
    └──────────────────────────────────────────────────────────────────┘
                             │
                             ▼
-                  SMTP (Mailpit en dev / Resend en prod)
+                  SMTP Resend (onboarding@resend.dev en dev / dominio verificado en prod)
 ```
 
 ## Contrato del webhook
@@ -45,12 +45,17 @@ PurchaseController::confirmCheckout()          ChangeEventDate (artisan)
 ```json
 {
   "type": "purchase_confirmation",   // o "event_date_changed"
-  "to": "user@example.com",
+  "from": "onboarding@resend.dev",   // controlado por N8N_EMAIL_FROM
+  "to": "user@example.com",          // en dev se sobreescribe con N8N_EMAIL_DEV_RECIPIENT
   "subject": "Confirmación de compra · ORD-ABC123",
   "html": "<!doctype html>...",
   "meta": { "venta_id": 42, "user_id": 7 }
 }
 ```
+
+`from` y `to` son gestionados por el Job antes de hacer el POST:
+- `from` viene de `N8N_EMAIL_FROM` (defecto `onboarding@resend.dev`).
+- `to` se reemplaza por `N8N_EMAIL_DEV_RECIPIENT` en cualquier entorno que no sea `production`. En producción llega el correo real del usuario.
 
 Respuestas:
 
@@ -81,39 +86,37 @@ Nodos (en orden):
 
 Las dos credenciales SMTP apuntan a la misma credencial llamada **`Tickify SMTP`** en n8n (no en el repo). Configurarla manualmente desde el editor:
 
-- **Dev** → Mailpit. Pero ojo: n8n cloud no puede llegar a `127.0.0.1` de tu máquina. Necesitas un túnel (ngrok, cloudflared) apuntando al puerto 1025, o correr n8n self-hosted en local. Ver más abajo.
-- **Prod** → Resend / SendGrid / etc. Host, puerto, user, pass desde el panel del proveedor. Activar TLS.
+- **Dev / sin dominio verificado** → Resend plan gratuito. Ver sección siguiente.
+- **Prod** → Resend con dominio verificado. Mismo host, misma credencial; solo cambia `N8N_EMAIL_FROM` en `.env`.
 
-## Dev local — cómo probar
+## Dev local — plan gratuito de Resend (sin dominio)
 
-El cuello de botella es que **n8n cloud vive en internet y Mailpit vive en tu localhost**. Tienes tres opciones, ordenadas de menos a más fricción:
+Resend permite enviar en desarrollo usando el remitente especial `onboarding@resend.dev`, sin necesidad de verificar un dominio. El único requisito es que el destinatario sea un correo verificado en tu cuenta (el que usaste para registrarte en Resend).
 
-### Opción A — Correr n8n local (recomendado para dev)
+### Configuración en n8n (una sola vez)
 
-```bash
-docker run -it --rm -p 5678:5678 \
-  -v ~/.n8n:/home/node/.n8n \
-  --add-host=host.docker.internal:host-gateway \
-  n8nio/n8n
-```
+1. Abre el workflow `email_automation` en el editor de n8n.
+2. En **ambos** nodos `Send Email`, cambia el campo _From Email_ a:
+   ```
+   {{ $json.body.from }}
+   ```
+   Así el remitente llega en el payload y lo controla Laravel (no está hardcodeado en n8n).
+3. En la credencial **`Tickify SMTP`**, deja los valores de Resend:
+   - Host: `smtp.resend.com`
+   - Port: `465`
+   - User: `resend`
+   - Password: `<tu RESEND_API_KEY>`
+   - TLS: activado
 
-Importar el mismo workflow (lo exportas desde la UI de n8n cloud y lo cargas), apuntar la credencial SMTP a `host.docker.internal:1025`, sin auth, sin TLS. En `.env` del backend:
+### Variables `.env` en dev
 
 ```ini
-N8N_EMAIL_WEBHOOK_URL=http://localhost:5678/webhook/232070c2-edff-46e9-91b9-bbc8c214b142
+N8N_EMAIL_WEBHOOK_URL=https://metafusion.app.n8n.cloud/webhook/232070c2-edff-46e9-91b9-bbc8c214b142
+N8N_EMAIL_FROM=onboarding@resend.dev
+N8N_EMAIL_DEV_RECIPIENT=faibercamacho16@gmail.com   # tu correo verificado en Resend
 ```
 
-### Opción B — Túnel a Mailpit + n8n cloud
-
-```bash
-ngrok tcp 1025
-```
-
-Tomar el host:puerto que da ngrok y meterlo en la credencial `Tickify SMTP` de n8n cloud. La URL del webhook sigue siendo la de n8n cloud. Funciona pero el endpoint de ngrok cambia cada vez que reinicias.
-
-### Opción C — Saltarse Mailpit y usar Resend con un dominio sandbox
-
-Más realista pero los correos salen de verdad. Útil para QA, no para iterar en el HTML.
+Con `N8N_EMAIL_DEV_RECIPIENT` definido, **el Job sobreescribe el destinatario** antes de hacer el POST. Todos los correos que dispara la app en local (compras, cambios de fecha) llegarán siempre a ese correo, sin importar qué usuario hizo la acción.
 
 ### Webhook test vs producción
 
@@ -170,14 +173,15 @@ curl -X POST "$N8N_EMAIL_WEBHOOK_URL" \
   -H 'Content-Type: application/json' \
   -d '{
     "type": "purchase_confirmation",
-    "to": "test@local.dev",
+    "from": "onboarding@resend.dev",
+    "to": "faibercamacho16@gmail.com",
     "subject": "smoke",
     "html": "<b>ok</b>",
     "meta": {}
   }'
 ```
 
-Esperado: `{"ok":true,"type":"purchase_confirmation"}` y el correo en Mailpit.
+Esperado: `{"ok":true,"type":"purchase_confirmation"}` y el correo en la bandeja de entrada de `faibercamacho16@gmail.com`.
 
 ### Cuando algo no llega
 

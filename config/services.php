@@ -38,7 +38,9 @@ return [
     'tickets_api_secret' => env('TICKETS_API_SECRET'),
 
     'n8n' => [
-        'email_webhook' => env('N8N_EMAIL_WEBHOOK_URL'),
+        'email_webhook'   => env('N8N_EMAIL_WEBHOOK_URL'),
+        'email_from'      => env('N8N_EMAIL_FROM', 'onboarding@resend.dev'),
+        'dev_recipient'   => env('N8N_EMAIL_DEV_RECIPIENT'),
     ],
 
 ];
