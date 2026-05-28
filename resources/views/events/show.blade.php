@@ -27,7 +27,16 @@
 
             @auth
             <div class="mb-6">
-                <livewire:favorite-button :eventoId="$event['id']" />
+                <livewire:favorite-button
+                    :slug="$event['slug']"
+                    :title="$event['title']"
+                    :category="$event['category']"
+                    :synopsis="$event['synopsis'][0] ?? null"
+                    :priceFrom="$event['price_from'] ?? 0"
+                    :posterColor="$event['poster_color']"
+                    :imageUrl="$event['image_url'] ?? null"
+                    :key="'fav-event-'.$event['slug']"
+                />
             </div>
             @endauth
 

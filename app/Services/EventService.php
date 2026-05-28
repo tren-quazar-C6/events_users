@@ -27,6 +27,34 @@ class EventService
         return $this->all()->firstWhere('slug', $slug);
     }
 
+    public function seatsForEvent(int $eventId): Collection
+    {
+        $baseUrl = config('services.events_api.url');
+
+        if (blank($baseUrl)) {
+            return collect();
+        }
+
+        try {
+            $response = Http::baseUrl($baseUrl)
+                ->timeout(config('services.events_api.timeout', 5))
+                ->acceptJson()
+                ->get("/api/eventos/{$eventId}/asientos")
+                ->throw();
+
+            return collect($this->extractList($response->json()))
+                ->map(fn (array $seat) => $this->normalizeSeat($seat))
+                ->values();
+        } catch (\Throwable $exception) {
+            Log::warning('Events API seats unavailable.', [
+                'event_id' => $eventId,
+                'message' => $exception->getMessage(),
+            ]);
+
+            return collect();
+        }
+    }
+
     private function fetchEvents(): array
     {
         $baseUrl = config('services.events_api.url');
@@ -98,11 +126,18 @@ class EventService
                 ?? data_get($event, 'posterColor')
                 ?? data_get($event, 'color')
                 ?? '#7BB394',
+            'image_url' => data_get($event, 'image_url')
+                ?? data_get($event, 'imageUrl')
+                ?? data_get($event, 'imagenPrincipal')
+                ?? data_get($event, 'imagen_principal'),
             'price_from' => (int) (data_get($event, 'price_from')
                 ?? data_get($event, 'priceFrom')
                 ?? data_get($event, 'precioDesde')
                 ?? data_get($event, 'precio')
                 ?? data_get($event, 'price')
+                ?? 0),
+            'available_seats' => (int) (data_get($event, 'available_seats')
+                ?? data_get($event, 'asientosDisponibles')
                 ?? 0),
             'showtimes' => $this->normalizeShowtimes(
                 data_get($event, 'showtimes')
@@ -144,6 +179,21 @@ class EventService
             ->filter(fn ($showtime) => is_array($showtime) && filled($showtime['date']) && filled($showtime['time']))
             ->values()
             ->all();
+    }
+
+    private function normalizeSeat(array $seat): array
+    {
+        return [
+            'id' => data_get($seat, 'idEventoAsiento') ?? data_get($seat, 'id'),
+            'seat_id' => data_get($seat, 'idAsiento') ?? data_get($seat, 'seat_id'),
+            'code' => data_get($seat, 'codigoAsiento') ?? data_get($seat, 'code'),
+            'row' => data_get($seat, 'fila') ?? data_get($seat, 'row'),
+            'number' => data_get($seat, 'numero') ?? data_get($seat, 'number'),
+            'zone' => data_get($seat, 'zona') ?? data_get($seat, 'zone') ?? 'General',
+            'zone_color' => data_get($seat, 'colorZona') ?? data_get($seat, 'zone_color'),
+            'price' => (float) (data_get($seat, 'precio') ?? data_get($seat, 'price') ?? 0),
+            'status' => data_get($seat, 'estado') ?? data_get($seat, 'status') ?? 'DISPONIBLE',
+        ];
     }
 
     private function mockEvents(): array

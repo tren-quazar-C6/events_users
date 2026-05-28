@@ -15,7 +15,9 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        URL::forceRootUrl(config('app.url'));
+        if ($this->app->environment('production')) {
+            URL::forceRootUrl(config('app.url'));
+        }
 
         // Set Carbon locale so translatedFormat() returns Spanish dates
         // everywhere: tickets, confirmation, emails, seat map, etc.

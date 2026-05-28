@@ -9,29 +9,65 @@ use App\Models\Evento;
 use App\Models\EventoAsiento;
 use App\Models\Ticket;
 use App\Models\Venta;
+use App\Services\EventService;
+use App\Services\PurchaseFlowService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schema;
 
 
 Route::get('/', fn () => view('home'))->name('home');
 Route::get('/catalog', fn () => view('catalog'))->name('catalog');
 
 Route::get('/events/{slug}', function ($slug) {
+    $apiEvent = app(EventService::class)->findBySlug($slug);
+
+    if ($apiEvent) {
+        $showtime = $apiEvent['showtimes'][0] ?? ['date' => now()->toDateString(), 'time' => '00:00'];
+        $date = Carbon::parse($showtime['date'].' '.$showtime['time']);
+
+        $event = [
+            'id'           => $apiEvent['id'],
+            'slug'         => $apiEvent['slug'],
+            'title'        => $apiEvent['title'],
+            'category'     => $apiEvent['category'],
+            'author'       => 'Tickify',
+            'duration'     => 'Por confirmar',
+            'synopsis'     => filled($apiEvent['synopsis']) ? [$apiEvent['synopsis']] : ['Información del evento por confirmar.'],
+            'poster_color' => $apiEvent['poster_color'],
+            'image_url'    => $apiEvent['image_url'],
+            'price_from'   => $apiEvent['price_from'],
+            'venue'        => 'Por confirmar',
+            'city'         => '',
+            'dates'        => [[
+                'dow'   => $date->locale('es')->isoFormat('ddd'),
+                'day'   => $date->day,
+                'month' => $date->locale('es')->isoFormat('MMM'),
+            ]],
+            'times'        => [$date->format('H:i')],
+            'price'        => $apiEvent['price_from'] > 0 ? number_format($apiEvent['price_from'], 0, ',', '.') : 'Por confirmar',
+            'showtimes'    => $apiEvent['showtimes'],
+        ];
+
+        return view('events.show', compact('event'));
+    }
+
     $evento = Evento::with('tipo')->where('slug', $slug)->where('activo', true)->firstOrFail();
 
     $event = [
-        'id'           => $evento->id,
-        'slug'         => $evento->slug,
-        'title'        => $evento->nombre_evento,
-        'category'     => $evento->tipo->nombre_tipo ?? '',
-        'author'       => $evento->author,
-        'duration'     => $evento->duration,
-        'synopsis'     => $evento->synopsis ?? [],
+        'id' => $evento->id,
+        'slug' => $evento->slug,
+        'title' => $evento->nombre_evento,
+        'category' => $evento->tipo->nombre_tipo ?? '',
+        'author' => $evento->author,
+        'duration' => $evento->duration,
+        'synopsis' => $evento->synopsis ?? [],
         'poster_color' => $evento->poster_color,
-        'price_from'   => $evento->price_from,
-        'venue'        => $evento->venue,
-        'city'         => $evento->city,
+        'image_url' => null,
+        'price_from' => $evento->price_from,
+        'venue' => $evento->venue,
+        'city' => $evento->city,
         'dates'        => [[
             'dow'   => Carbon::parse($evento->fecha_evento)->locale('es')->isoFormat('ddd'),
             'day'   => Carbon::parse($evento->fecha_evento)->day,
@@ -62,6 +98,16 @@ Route::middleware('auth')->group(function () {
     // ─── Dashboard sub-páginas ───────────────────────────────────────────
     Route::get('/dashboard/tickets', function () {
         $user = Auth::user();
+        $hasSalesTables = Schema::hasTable('ventas') && Schema::hasTable('tickets') && Schema::hasTable('estado_tickets');
+
+        if (! $hasSalesTables) {
+            $tickets = app(PurchaseFlowService::class)->ticketsForUser($user->id);
+
+            return view('dashboard.tickets', [
+                'upcoming' => $tickets->filter(fn ($ticket) => $ticket->eventoAsiento?->evento?->fecha_evento?->isFuture())->values(),
+                'past' => $tickets->filter(fn ($ticket) => $ticket->eventoAsiento?->evento?->fecha_evento?->isPast())->values(),
+            ]);
+        }
 
         $estadoConfirmado = EstadoTicket::where('nombre_estado', 'CONFIRMADO')->value('id');
         $estadoUsado      = EstadoTicket::where('nombre_estado', 'USADO')->value('id');
@@ -92,6 +138,45 @@ Route::middleware('auth')->group(function () {
 
     // ─── Mapa de asientos ────────────────────────────────────────────────
     Route::get('/events/{slug}/seats', function ($slug) {
+        $apiEvent = app(EventService::class)->findBySlug($slug);
+
+        if ($apiEvent) {
+            $apiSeats = app(EventService::class)->seatsForEvent((int) $apiEvent['id']);
+
+            $seatRows = $apiSeats
+                ->groupBy('row')
+                ->sortKeys()
+                ->map(fn ($seats, $row) => [
+                    'label' => $row,
+                    'section' => $seats->first()['zone'],
+                    'seats' => $seats->sortBy('number')->map(fn ($seat) => [
+                        'id' => $seat['id'],
+                        'n' => $seat['number'],
+                        's' => match ($seat['status']) {
+                            'DISPONIBLE' => 'a',
+                            'RESERVADO', 'VENDIDO' => 'o',
+                            'BLOQUEADO' => 'b',
+                            default => 'a',
+                        },
+                        'precio' => $seat['price'],
+                        'section' => $seat['zone'],
+                    ])->values()->all(),
+                ])->values()->all();
+
+            $showtime = $apiEvent['showtimes'][0] ?? ['date' => now()->toDateString(), 'time' => '00:00'];
+            $event = [
+                'id' => $apiEvent['id'],
+                'slug' => $apiEvent['slug'],
+                'title' => $apiEvent['title'],
+                'venue' => 'Por confirmar',
+                'city' => '',
+                'price_from' => $apiEvent['price_from'],
+                'showtimes' => [$showtime],
+            ];
+
+            return view('events.seats', compact('event', 'seatRows'));
+        }
+
         $evento = Evento::where('slug', $slug)->where('activo', true)->firstOrFail();
 
         $eventoAsientos = EventoAsiento::where('evento_id', $evento->id)

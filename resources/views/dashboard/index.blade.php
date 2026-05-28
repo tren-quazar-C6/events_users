@@ -7,19 +7,34 @@
     use App\Models\EstadoTicket;
     use App\Models\Ticket;
     use App\Models\Venta;
+    use App\Services\FavoriteService;
+    use App\Services\PurchaseFlowService;
+    use Illuminate\Support\Facades\Schema;
 
-    $user         = auth()->user();
-    $ventaIds     = Venta::where('user_id', $user->id)->pluck('id');
-    $confirmadoId = EstadoTicket::where('nombre_estado', 'CONFIRMADO')->value('id');
+    $user = auth()->user();
+    $hasSalesTables = Schema::hasTable('ventas') && Schema::hasTable('tickets') && Schema::hasTable('estado_tickets');
+    $upcomingTickets = collect();
+    $totalTickets = 0;
 
-    $upcomingTickets = Ticket::whereIn('venta_id', $ventaIds)
-        ->where('estado_ticket_id', $confirmadoId)
-        ->with(['eventoAsiento.evento', 'eventoAsiento.asiento'])
-        ->get()
-        ->filter(fn ($t) => $t->eventoAsiento?->evento?->fecha_evento?->isFuture());
+    if ($hasSalesTables) {
+        $ventaIds = Venta::where('user_id', $user->id)->pluck('id');
+        $confirmadoId = EstadoTicket::where('nombre_estado', 'CONFIRMADO')->value('id');
 
-    $totalTickets = Ticket::whereIn('venta_id', $ventaIds)->count();
-    $events       = app(\App\Services\EventService::class)->featured();
+        $upcomingTickets = Ticket::whereIn('venta_id', $ventaIds)
+            ->where('estado_ticket_id', $confirmadoId)
+            ->with(['eventoAsiento.evento', 'eventoAsiento.asiento'])
+            ->get()
+            ->filter(fn ($t) => $t->eventoAsiento?->evento?->fecha_evento?->isFuture());
+
+        $totalTickets = Ticket::whereIn('venta_id', $ventaIds)->count();
+    } else {
+        $allTickets = app(PurchaseFlowService::class)->ticketsForUser($user->id);
+        $upcomingTickets = $allTickets->filter(fn ($t) => $t->eventoAsiento?->evento?->fecha_evento?->isFuture());
+        $totalTickets = $allTickets->count();
+    }
+
+    $favoritesCount = app(FavoriteService::class)->countForUser($user->id);
+    $events = app(\App\Services\EventService::class)->featured();
 @endphp
 
     {{-- Saludo --}}
@@ -40,7 +55,7 @@
         </div>
         <div class="bg-white rounded-card shadow-soft p-5 col-span-2 md:col-span-1">
             <p class="text-sm text-sage-dark/60">Favoritos</p>
-            <p class="font-display text-3xl text-sage-dark mt-1">{{ $user->favoritos()->count() }}</p>
+            <p class="font-display text-3xl text-sage-dark mt-1">{{ $favoritesCount }}</p>
         </div>
     </div>
 

@@ -2,24 +2,42 @@
 
 namespace App\Livewire;
 
-use App\Models\Favorito;
+use App\Services\FavoriteService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class FavoriteButton extends Component
 {
-    public int $eventoId;
+    public ?string $slug = null;
+    public ?string $title = null;
+    public ?string $category = null;
+    public ?string $synopsis = null;
+    public ?float $priceFrom = null;
+    public ?string $posterColor = null;
+    public ?string $imageUrl = null;
     public bool $isFavorited = false;
 
-    public function mount(int $eventoId): void
+    public function mount(
+        ?int $eventoId = null,
+        ?string $slug = null,
+        ?string $title = null,
+        ?string $category = null,
+        ?string $synopsis = null,
+        ?float $priceFrom = null,
+        ?string $posterColor = null,
+        ?string $imageUrl = null,
+    ): void
     {
-        $this->eventoId = $eventoId;
+        $this->slug = $slug;
+        $this->title = $title;
+        $this->category = $category;
+        $this->synopsis = $synopsis;
+        $this->priceFrom = $priceFrom;
+        $this->posterColor = $posterColor;
+        $this->imageUrl = $imageUrl;
 
-        if (Auth::check()) {
-            $this->isFavorited = Auth::user()
-                ->favoritos()
-                ->where('evento_id', $eventoId)
-                ->exists();
+        if (Auth::check() && filled($this->slug)) {
+            $this->isFavorited = app(FavoriteService::class)->hasForUser(Auth::id(), $this->slug);
         }
     }
 
@@ -29,18 +47,19 @@ class FavoriteButton extends Component
             return redirect()->route('login');
         }
 
-        $user = Auth::user();
-
-        if ($this->isFavorited) {
-            $user->favoritos()->where('evento_id', $this->eventoId)->delete();
-            $this->isFavorited = false;
-        } else {
-            Favorito::firstOrCreate([
-                'user_id' => $user->id,
-                'evento_id' => $this->eventoId,
-            ]);
-            $this->isFavorited = true;
+        if (blank($this->slug) || blank($this->title)) {
+            return;
         }
+
+        $this->isFavorited = app(FavoriteService::class)->toggleForUser(Auth::id(), [
+            'slug' => $this->slug,
+            'title' => $this->title,
+            'category' => $this->category,
+            'synopsis' => $this->synopsis,
+            'price_from' => $this->priceFrom,
+            'poster_color' => $this->posterColor,
+            'image_url' => $this->imageUrl,
+        ]);
 
         $this->dispatch('favorites-changed');
     }

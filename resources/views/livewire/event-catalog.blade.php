@@ -38,24 +38,24 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @foreach ($events as $event)
                 @php
-                    $lowestPrice = $event->available_price_from ?? $event->price_from;
+                    $lowestPrice = $event['price_from'] ?? null;
                 @endphp
 
                 <div class="relative">
-                    <a href="{{ route('events.show', $event->slug) }}"
+                    <a href="{{ route('events.show', $event['slug']) }}"
                        class="bg-white rounded-card shadow-soft overflow-hidden hover:-translate-y-1 transition-all duration-300 block">
-                        <div class="aspect-[4/3] flex items-center justify-center"
-                             style="background-color: {{ $event->poster_color }}">
-                            <span class="font-display text-4xl text-white/90 px-6 text-center">
-                                {{ $event->nombre_evento }}
+                        <div class="aspect-[4/3] flex items-center justify-center bg-cover bg-center"
+                             style="{{ filled($event['image_url']) ? 'background-image: linear-gradient(rgba(45, 74, 62, .25), rgba(45, 74, 62, .25)), url('.$event['image_url'].')' : 'background-color: '.$event['poster_color'] }}">
+                            <span class="font-display text-4xl text-white/90 px-6 text-center drop-shadow">
+                                {{ $event['title'] }}
                             </span>
                         </div>
                         <div class="p-5">
                             <span class="text-xs font-semibold uppercase tracking-wide text-sage bg-sage-light px-2 py-0.5 rounded-full">
-                                {{ $event->tipo->nombre_tipo ?? '' }}
+                                {{ $event['category'] }}
                             </span>
                             <h3 class="font-display text-xl text-sage-dark mt-2 mb-1 leading-snug line-clamp-2">
-                                {{ $event->nombre_evento }}
+                                {{ $event['title'] }}
                             </h3>
                             <div class="mt-3">
                                 <p class="text-xs text-sage-dark/60">Precio desde</p>
@@ -69,9 +69,19 @@
                             </div>
                         </div>
                     </a>
+
                     @auth
                         <div class="absolute top-2 right-2 z-10">
-                            <livewire:favorite-button :eventoId="$event->id" :key="'cat-fav-'.$event->id" />
+                            <livewire:favorite-button
+                                :slug="$event['slug']"
+                                :title="$event['title']"
+                                :category="$event['category']"
+                                :synopsis="$event['synopsis'] ?? null"
+                                :priceFrom="$event['price_from'] ?? 0"
+                                :posterColor="$event['poster_color']"
+                                :imageUrl="$event['image_url'] ?? null"
+                                :key="'fav-catalog-'.$event['slug']"
+                            />
                         </div>
                     @endauth
                 </div>

@@ -37,7 +37,9 @@ class EventServiceTest extends TestCase
             'category' => 'Drama',
             'synopsis' => 'Una funcion de prueba.',
             'poster_color' => '#123456',
+            'image_url' => null,
             'price_from' => 55000,
+            'available_seats' => 0,
             'showtimes' => [
                 ['date' => '2026-06-01', 'time' => '20:00'],
             ],
@@ -68,6 +70,8 @@ class EventServiceTest extends TestCase
         $this->assertSame('Morat en Vivo', $event['title']);
         $this->assertSame('CONCIERTO', $event['category']);
         $this->assertSame('Concierto oficial', $event['synopsis']);
+        $this->assertNull($event['image_url']);
+        $this->assertSame(3, $event['available_seats']);
         $this->assertSame([
             ['date' => '2025-12-20', 'time' => '20:00'],
         ], $event['showtimes']);
