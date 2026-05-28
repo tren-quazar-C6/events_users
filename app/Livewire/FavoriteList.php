@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Services\FavoriteService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -13,12 +14,11 @@ class FavoriteList extends Component
 
     public function render()
     {
-        $eventos = Auth::user()
-            ->favoritos()
-            ->with('evento')
-            ->get()
-            ->pluck('evento')
-            ->filter();
+        if (! Auth::check()) {
+            return view('livewire.favorite-list', ['eventos' => collect()]);
+        }
+
+        $eventos = app(FavoriteService::class)->allForUser(Auth::id());
 
         return view('livewire.favorite-list', compact('eventos'));
     }

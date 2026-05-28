@@ -22,6 +22,11 @@ return [
         'key' => env('RESEND_API_KEY'),
     ],
 
+    'events_api' => [
+        'url' => env('EVENTS_API_URL', 'http://204.168.211.73:8105'),
+        'timeout' => env('EVENTS_API_TIMEOUT', 5),
+    ],
+
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
