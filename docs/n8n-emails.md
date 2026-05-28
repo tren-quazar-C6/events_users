@@ -91,22 +91,8 @@ Las dos credenciales SMTP apuntan a la misma credencial llamada **`Tickify SMTP`
 
 ## Dev local — plan gratuito de Resend (sin dominio)
 
-Resend permite enviar en desarrollo usando el remitente especial `onboarding@resend.dev`, sin necesidad de verificar un dominio. El único requisito es que el destinatario sea un correo verificado en tu cuenta (el que usaste para registrarte en Resend).
+Resend permite enviar en desarrollo usando el remitente especial `onboarding@resend.dev`, sin verificar un dominio. requsito es usar el correo verificado en la cuenta de resend.
 
-### Configuración en n8n (una sola vez)
-
-1. Abre el workflow `email_automation` en el editor de n8n.
-2. En **ambos** nodos `Send Email`, cambia el campo _From Email_ a:
-   ```
-   {{ $json.body.from }}
-   ```
-   Así el remitente llega en el payload y lo controla Laravel (no está hardcodeado en n8n).
-3. En la credencial **`Tickify SMTP`**, deja los valores de Resend:
-   - Host: `smtp.resend.com`
-   - Port: `465`
-   - User: `resend`
-   - Password: `<tu RESEND_API_KEY>`
-   - TLS: activado
 
 ### Variables `.env` en dev
 
@@ -183,15 +169,6 @@ curl -X POST "$N8N_EMAIL_WEBHOOK_URL" \
 
 Esperado: `{"ok":true,"type":"purchase_confirmation"}` y el correo en la bandeja de entrada de `faibercamacho16@gmail.com`.
 
-### Cuando algo no llega
-
-| Síntoma | Dónde mirar |
-|---|---|
-| Job en `failed_jobs` con `RuntimeException: n8n webhook falló (...)` | n8n no contestó 2xx. Abrir la última ejecución del workflow en el editor y ver qué nodo falló (90% de las veces es la credencial SMTP). |
-| Job en `failed_jobs` con `cURL error 28: Operation timed out` | n8n cloud no responde o el `N8N_EMAIL_WEBHOOK_URL` está mal. Confirmar con el smoke test de arriba. |
-| Ejecución verde en n8n pero nada en Mailpit | El SMTP de la credencial apunta a otro lado (clásico: olvidaste cambiar a `host.docker.internal` cuando moviste n8n a docker). |
-| `Respond 400 (Unknown Type)` | El backend mandó un `type` que no es `purchase_confirmation` ni `event_date_changed`. Si agregaste un tipo nuevo, agregar la rama en el Switch del workflow. |
-| Correo llega pero los links son `http://localhost/...` sin puerto | `APP_URL` en `.env` no incluye `:8000`. Es el mismo problema de siempre cuando se renderiza en el worker. |
 
 ### Reprocesar fallidos
 
