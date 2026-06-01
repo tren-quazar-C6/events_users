@@ -39,13 +39,14 @@
             @foreach ($events as $event)
                 @php
                     $lowestPrice = $event['price_from'] ?? null;
+                    $cardImage = $event['image_url'] ?? '/icons/icon-512.png';
                 @endphp
 
                 <div class="relative">
                     <a href="{{ route('events.show', $event['slug']) }}"
                        class="bg-white rounded-card shadow-soft overflow-hidden hover:-translate-y-1 transition-all duration-300 block">
                         <div class="aspect-[4/3] flex items-center justify-center bg-cover bg-center"
-                             style="{{ filled($event['image_url']) ? 'background-image: linear-gradient(rgba(45, 74, 62, .25), rgba(45, 74, 62, .25)), url('.$event['image_url'].')' : 'background-color: '.$event['poster_color'] }}">
+                             style="background-image: linear-gradient(rgba(45, 74, 62, .25), rgba(45, 74, 62, .25)), url('{{ $cardImage }}')">
                             <span class="font-display text-4xl text-white/90 px-6 text-center drop-shadow">
                                 {{ $event['title'] }}
                             </span>

@@ -43,6 +43,13 @@
                 <p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-4">
                     Asientos ({{ $eventoAsientos->count() }})
                 </p>
+                <div class="mb-4">
+                    <a href="{{ route('events.seats', $evento->slug) }}"
+                       class="inline-flex items-center gap-1 font-label-md text-label-md text-primary hover:underline">
+                        <span class="material-symbols-outlined" style="font-size:16px">arrow_back</span>
+                        Cambiar asientos en el mapa
+                    </a>
+                </div>
                 <div class="space-y-2">
                     @foreach ($eventoAsientos as $ea)
                         <div class="flex items-center justify-between py-2 border-b border-secondary-container/20 last:border-0">

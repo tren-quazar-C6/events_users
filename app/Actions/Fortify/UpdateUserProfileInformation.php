@@ -3,6 +3,7 @@
 namespace App\Actions\Fortify;
 
 use App\Models\User;
+use App\Services\UsuarioSyncService;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -10,6 +11,11 @@ use Laravel\Fortify\Contracts\UpdatesUserProfileInformation;
 
 class UpdateUserProfileInformation implements UpdatesUserProfileInformation
 {
+    public function __construct(
+        private readonly UsuarioSyncService $usuarioSyncService,
+    ) {
+    }
+
     /**
      * Validate and update the given user's profile information.
      *
@@ -36,6 +42,8 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
                 'email' => $input['email'],
             ])->save();
         }
+
+        $this->usuarioSyncService->sync($user);
     }
 
     /**

@@ -27,22 +27,54 @@
         </div>
     </section>
 
-    {{-- DESTACADOS placeholder --}}
+    {{-- DESTACADOS --}}
     <section class="py-16 px-4">
         <div class="max-w-7xl mx-auto">
             <h2 class="font-display text-4xl text-sage-dark mb-8">Esta semana en cartelera</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                @for ($i = 1; $i <= 3; $i++)
+                @forelse ($events->take(3) as $event)
+                    @php
+                        $image = $event->imagenes->firstWhere('principal', true)
+                            ?? $event->imagenes->firstWhere('activo', true)
+                            ?? $event->imagenes->first();
+                        $imageUrl = null;
+
+                        if ($image?->ruta_url) {
+                            $imageUrl = \Illuminate\Support\Str::startsWith($image->ruta_url, ['http://', 'https://', '/'])
+                                ? $image->ruta_url
+                                : \Illuminate\Support\Facades\Storage::url($image->ruta_url);
+                        }
+                        $imageUrl = $imageUrl ?: '/icons/icon-512.png';
+                    @endphp
                     <div class="bg-white rounded-card shadow-soft overflow-hidden">
-                        <div class="aspect-[4/3] bg-sage-light"></div>
+                        <div class="aspect-[4/3] bg-sage-light bg-cover bg-center"
+                             style="background-image: linear-gradient(rgba(45, 74, 62, .20), rgba(45, 74, 62, .20)), url('{{ $imageUrl }}');"></div>
                         <div class="p-6">
-                            <span class="inline-block px-2 py-1 text-xs font-medium rounded-full bg-sage-light text-sage-dark">Drama</span>
-                            <h3 class="font-display text-2xl text-sage-dark mt-2">Próxima obra {{ $i }}</h3>
-                            <p class="text-sage-dark/70 text-sm mt-2">Una breve descripción de la obra que va aquí cuando conectemos el catálogo.</p>
-                            <a href="{{ route('catalog') }}" class="inline-block mt-4 text-sage font-semibold hover:underline">Ver detalles →</a>
+                            <span class="inline-block px-2 py-1 text-xs font-medium rounded-full bg-sage-light text-sage-dark">{{ $event->tipo->nombre_tipo ?? 'Evento' }}</span>
+                            <h3 class="font-display text-2xl text-sage-dark mt-2">{{ $event->nombre_evento }}</h3>
+                            <p class="text-sage-dark/70 text-sm mt-2">
+                                {{ \Illuminate\Support\Str::limit(implode(' ', (array) ($event->synopsis ?? [])), 120) ?: 'Próximamente más información de esta obra.' }}
+                            </p>
+                            <p class="text-sage-dark/60 text-xs mt-2">{{ $event->fecha_evento?->translatedFormat('l j \\d\\e F · H:i') }}</p>
+                            @if (filled($event->slug))
+                                <div class="mt-4 flex items-center gap-4">
+                                    <a href="{{ route('events.show', $event->slug) }}" class="text-sage font-semibold hover:underline">Ver detalles →</a>
+                                    @auth
+                                        <a href="{{ route('events.seats', $event->slug) }}" class="text-sage-dark font-semibold hover:underline">Comprar</a>
+                                    @else
+                                        <a href="{{ route('login') }}" class="text-sage-dark font-semibold hover:underline">Comprar</a>
+                                    @endauth
+                                </div>
+                            @else
+                                <p class="mt-4 text-sage-dark/60 text-sm">Evento sin URL pública todavía.</p>
+                            @endif
                         </div>
                     </div>
-                @endfor
+                @empty
+                    <div class="md:col-span-3 bg-white rounded-card shadow-soft p-6 text-sage-dark/70">
+                        Aún no hay eventos activos en cartelera.
+                    </div>
+                @endforelse
             </div>
         </div>
     </section>

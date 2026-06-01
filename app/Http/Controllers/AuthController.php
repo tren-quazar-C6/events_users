@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
+use App\Actions\Fortify\CreateNewUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
@@ -56,7 +55,7 @@ class AuthController extends Controller
     }
 
     /** POST /register — crea el usuario y lo loguea automáticamente */
-    public function register(Request $request)
+    public function register(Request $request, CreateNewUser $createNewUser)
     {
         // 1. VALIDACIÓN
         //    - email tiene que ser único en la tabla users
@@ -71,11 +70,7 @@ class AuthController extends Controller
         // 2. CREAR USUARIO
         //    Hash::make encripta la contraseña con bcrypt antes de guardarla.
         //    NUNCA guardes contraseñas en texto plano.
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-        ]);
+        $user = $createNewUser->create($validated);
 
         // 3. AUTO-LOGIN tras el registro (UX: no obligamos a loguearse de nuevo)
         Auth::login($user);

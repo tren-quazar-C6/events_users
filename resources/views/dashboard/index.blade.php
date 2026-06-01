@@ -14,7 +14,8 @@
     $user = auth()->user();
     $hasSalesTables = Schema::hasTable('ventas') && Schema::hasTable('tickets') && Schema::hasTable('estado_tickets');
     $upcomingTickets = collect();
-    $totalTickets = 0;
+    $dbTickets = collect();
+    $cachedTickets = app(PurchaseFlowService::class)->ticketsForUser($user->id);
 
     if ($hasSalesTables) {
         $ventaIds = Venta::where('user_id', $user->id)->pluck('id');
@@ -26,12 +27,20 @@
             ->get()
             ->filter(fn ($t) => $t->eventoAsiento?->evento?->fecha_evento?->isFuture());
 
-        $totalTickets = Ticket::whereIn('venta_id', $ventaIds)->count();
-    } else {
-        $allTickets = app(PurchaseFlowService::class)->ticketsForUser($user->id);
-        $upcomingTickets = $allTickets->filter(fn ($t) => $t->eventoAsiento?->evento?->fecha_evento?->isFuture());
-        $totalTickets = $allTickets->count();
+        $dbTickets = Ticket::whereIn('venta_id', $ventaIds)
+            ->with(['eventoAsiento.evento', 'eventoAsiento.asiento'])
+            ->get();
     }
+
+    $upcomingTickets = $upcomingTickets
+        ->concat($cachedTickets->filter(fn ($t) => $t->eventoAsiento?->evento?->fecha_evento?->isFuture()))
+        ->unique('codigo_unico')
+        ->values();
+
+    $totalTickets = $dbTickets
+        ->concat($cachedTickets)
+        ->unique('codigo_unico')
+        ->count();
 
     $favoritesCount = app(FavoriteService::class)->countForUser($user->id);
     $events = app(\App\Services\EventService::class)->featured();
@@ -91,9 +100,11 @@
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             @forelse ($events as $event)
+                @php $cardImage = $event['image_url'] ?? '/icons/icon-512.png'; @endphp
                 <a href="{{ route('events.show', $event['slug']) }}"
                    class="bg-white rounded-card shadow-soft overflow-hidden hover:shadow-lg transition">
-                    <div class="aspect-[4/3]" style="background-color: {{ $event['poster_color'] }}"></div>
+                    <div class="aspect-[4/3] bg-cover bg-center"
+                         style="background-image: linear-gradient(rgba(45, 74, 62, .20), rgba(45, 74, 62, .20)), url('{{ $cardImage }}')"></div>
                     <div class="p-4">
                         <p class="text-xs text-sage-dark/60">{{ $event['category'] }}</p>
                         <p class="font-display text-lg text-sage-dark mt-1">{{ $event['title'] }}</p>
