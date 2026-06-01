@@ -2,11 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\UsuarioSyncService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class ProfileController extends Controller
 {
+    public function __construct(
+        private readonly UsuarioSyncService $usuarioSyncService,
+    ) {
+    }
+
     /** GET /dashboard/profile */
     public function show()
     {
@@ -21,6 +27,7 @@ class ProfileController extends Controller
         ]);
 
         $request->user()->update($validated);
+        $this->usuarioSyncService->sync($request->user());
 
         return back()->with('status', 'Perfil actualizado correctamente.');
     }
@@ -38,6 +45,7 @@ class ProfileController extends Controller
         $request->user()->update([
             'password' => Hash::make($request->password),
         ]);
+        $this->usuarioSyncService->sync($request->user());
 
         return back()->with('status', 'Contraseña actualizada correctamente.');
     }

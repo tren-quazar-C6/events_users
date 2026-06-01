@@ -55,9 +55,9 @@
                         </p>
 
                         @auth
-                            <button class="w-full mt-6 bg-sage text-white font-semibold py-3 rounded-btn hover:bg-sage-dark transition">
+                            <a href="{{ route('events.seats', $event['slug']) }}" class="block w-full mt-6 bg-sage text-white text-center font-semibold py-3 rounded-btn hover:bg-sage-dark transition">
                                 Comprar entradas
-                            </button>
+                            </a>
                         @else
                             <a href="{{ route('login') }}" class="block w-full mt-6 bg-sage text-white text-center font-semibold py-3 rounded-btn hover:bg-sage-dark transition">
                                 Inicia sesión para comprar

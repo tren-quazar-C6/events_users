@@ -17,15 +17,19 @@ class TicketController extends Controller
 {
     public function qr(string $code): Response
     {
-        if (! $this->hasSalesTables()) {
-            $ticket = app(PurchaseFlowService::class)->findTicketForUser($code, Auth::id());
-            abort_if(! $ticket, 404);
-        } else {
+        $ticket = null;
+
+        if ($this->hasSalesTables()) {
             $ventaIds = Venta::where('user_id', Auth::id())->pluck('id');
 
             $ticket = Ticket::whereIn('venta_id', $ventaIds)
                 ->where('codigo_unico', $code)
-                ->firstOrFail();
+                ->first();
+        }
+
+        if (! $ticket) {
+            $ticket = app(PurchaseFlowService::class)->findTicketForUser($code, Auth::id());
+            abort_if(! $ticket, 404);
         }
 
         $renderer = new ImageRenderer(

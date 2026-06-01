@@ -13,11 +13,30 @@ use App\Services\EventService;
 use App\Services\PurchaseFlowService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 
 
-Route::get('/', fn () => view('home'))->name('home');
+Route::get('/', function () {
+    try {
+        $events = Evento::with(['tipo', 'imagenes'])
+            ->where('activo', true)
+            ->whereNotNull('slug')
+            ->where('slug', '<>', '')
+            ->orderBy('fecha_evento')
+            ->take(6)
+            ->get();
+    } catch (\Throwable $exception) {
+        Log::warning('Home events unavailable from DB.', [
+            'message' => $exception->getMessage(),
+        ]);
+
+        $events = collect();
+    }
+
+    return view('home', compact('events'));
+})->name('home');
 Route::get('/catalog', fn () => view('catalog'))->name('catalog');
 
 Route::get('/events/{slug}', function ($slug) {
@@ -99,32 +118,39 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard/tickets', function () {
         $user = Auth::user();
         $hasSalesTables = Schema::hasTable('ventas') && Schema::hasTable('tickets') && Schema::hasTable('estado_tickets');
+        $cachedTickets = app(PurchaseFlowService::class)->ticketsForUser($user->id);
 
-        if (! $hasSalesTables) {
-            $tickets = app(PurchaseFlowService::class)->ticketsForUser($user->id);
+        $upcoming = collect();
+        $past = collect();
 
-            return view('dashboard.tickets', [
-                'upcoming' => $tickets->filter(fn ($ticket) => $ticket->eventoAsiento?->evento?->fecha_evento?->isFuture())->values(),
-                'past' => $tickets->filter(fn ($ticket) => $ticket->eventoAsiento?->evento?->fecha_evento?->isPast())->values(),
-            ]);
+        if ($hasSalesTables) {
+            $estadoConfirmado = EstadoTicket::where('nombre_estado', 'CONFIRMADO')->value('id');
+            $estadoUsado      = EstadoTicket::where('nombre_estado', 'USADO')->value('id');
+
+            $ventaIds = Venta::where('user_id', $user->id)->pluck('id');
+
+            $upcoming = Ticket::whereIn('venta_id', $ventaIds)
+                ->where('estado_ticket_id', $estadoConfirmado)
+                ->with(['venta', 'eventoAsiento.asiento.zona', 'eventoAsiento.evento'])
+                ->latest()
+                ->get();
+
+            $past = Ticket::whereIn('venta_id', $ventaIds)
+                ->where('estado_ticket_id', $estadoUsado)
+                ->with(['venta', 'eventoAsiento.asiento.zona', 'eventoAsiento.evento'])
+                ->latest()
+                ->get();
         }
 
-        $estadoConfirmado = EstadoTicket::where('nombre_estado', 'CONFIRMADO')->value('id');
-        $estadoUsado      = EstadoTicket::where('nombre_estado', 'USADO')->value('id');
+        $upcoming = $upcoming
+            ->concat($cachedTickets->filter(fn ($ticket) => $ticket->eventoAsiento?->evento?->fecha_evento?->isFuture()))
+            ->unique('codigo_unico')
+            ->values();
 
-        $ventaIds = Venta::where('user_id', $user->id)->pluck('id');
-
-        $upcoming = Ticket::whereIn('venta_id', $ventaIds)
-            ->where('estado_ticket_id', $estadoConfirmado)
-            ->with(['venta', 'eventoAsiento.asiento.zona', 'eventoAsiento.evento'])
-            ->latest()
-            ->get();
-
-        $past = Ticket::whereIn('venta_id', $ventaIds)
-            ->where('estado_ticket_id', $estadoUsado)
-            ->with(['venta', 'eventoAsiento.asiento.zona', 'eventoAsiento.evento'])
-            ->latest()
-            ->get();
+        $past = $past
+            ->concat($cachedTickets->filter(fn ($ticket) => $ticket->eventoAsiento?->evento?->fecha_evento?->isPast()))
+            ->unique('codigo_unico')
+            ->values();
 
         return view('dashboard.tickets', compact('upcoming', 'past'));
     })->name('dashboard.tickets');
