@@ -190,12 +190,14 @@ class PurchaseController extends Controller
             ]);
 
             foreach ($eventoAsientos as $ea) {
-                Ticket::create([
-                    'id_venta'          => $venta->id_venta,
-                    'id_estado_ticket'  => 2,   // PAGADO
-                    'id_evento_asiento' => $ea->id_evento_asiento,
-                    'precio_pagado'     => $precios[$ea->id_evento_asiento] ?? 0,
-                ]);
+                Ticket::updateOrCreate(
+                    ['id_evento_asiento' => $ea->id_evento_asiento],
+                    [
+                        'id_venta'          => $venta->id_venta,
+                        'id_estado_ticket'  => 2,   // PAGADO
+                        'precio_pagado'     => $precios[$ea->id_evento_asiento] ?? 0,
+                    ]
+                );
 
                 $ea->update(['estado' => 'VENDIDO']);
             }
