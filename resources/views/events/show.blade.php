@@ -31,7 +31,7 @@
                     :slug="$event['slug']"
                     :title="$event['title']"
                     :category="$event['category']"
-                    :synopsis="$event['synopsis'][0] ?? null"
+                    :synopsis="$event['synopsis'] ?? null"
                     :priceFrom="$event['price_from'] ?? 0"
                     :posterColor="$event['poster_color']"
                     :imageUrl="$event['image_url'] ?? null"
