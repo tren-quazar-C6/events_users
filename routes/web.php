@@ -39,6 +39,43 @@ Route::get('/', function () {
 Route::get('/catalog', fn () => view('catalog'))->name('catalog');
 
 Route::get('/events/{slug}', function ($slug) {
+    // Primero buscar en la BD local
+    $eventos = Evento::with('tipo')->where('activo', true)->get();
+    $evento = $eventos->first(fn ($e) => \Illuminate\Support\Str::slug($e->nombre_evento) === $slug);
+
+    if ($evento) {
+        $priceFromDesc = $evento->price_from_description;
+
+        $event = [
+            'id'           => $evento->id_evento,
+            'slug'         => \Illuminate\Support\Str::slug($evento->nombre_evento),
+            'title'        => $evento->nombre_evento,
+            'category'     => $evento->tipo->nombre_tipo ?? '',
+            'author'       => 'Tickify',
+            'duration'     => 'Por confirmar',
+            'synopsis'     => filled($evento->descripcion) ? [$evento->descripcion] : ['Información del evento por confirmar.'],
+            'poster_color' => $evento->poster_color ?? '#7BB394',
+            'image_url'    => $evento->ruta_url,
+            'price_from'   => $priceFromDesc > 0 ? $priceFromDesc : 0,
+            'venue'        => 'Teatro Quasar',
+            'city'         => 'Medellín',
+            'dates'        => [[
+                'dow'   => Carbon::parse($evento->fecha_evento)->locale('es')->isoFormat('ddd'),
+                'day'   => Carbon::parse($evento->fecha_evento)->day,
+                'month' => Carbon::parse($evento->fecha_evento)->locale('es')->isoFormat('MMM'),
+            ]],
+            'times'        => [Carbon::parse($evento->fecha_evento)->format('H:i')],
+            'price'        => $priceFromDesc > 0 ? number_format($priceFromDesc, 0, ',', '.') : 'Por confirmar',
+            'showtimes'    => [[
+                'date' => Carbon::parse($evento->fecha_evento)->format('Y-m-d'),
+                'time' => Carbon::parse($evento->fecha_evento)->format('H:i'),
+            ]],
+        ];
+
+        return view('events.show', compact('event'));
+    }
+
+    // Fallback a EventService
     $apiEvent = app(EventService::class)->findBySlug($slug);
 
     if ($apiEvent) {
@@ -71,43 +108,7 @@ Route::get('/events/{slug}', function ($slug) {
         return view('events.show', compact('event'));
     }
 
-    // Buscar por slug generado desde nombre_evento
-    $eventos = Evento::with('tipo')->where('activo', true)->get();
-    $evento = $eventos->first(fn ($e) => \Illuminate\Support\Str::slug($e->nombre_evento) === $slug);
-
-    if (!$evento) {
-        abort(404, 'Evento no encontrado');
-    }
-
-    $priceFromDesc = $evento->price_from_description;
-
-    $event = [
-        'id'           => $evento->id_evento,
-        'slug'         => \Illuminate\Support\Str::slug($evento->nombre_evento),
-        'title'        => $evento->nombre_evento,
-        'category'     => $evento->tipo->nombre_tipo ?? '',
-        'author'       => 'Tickify',
-        'duration'     => 'Por confirmar',
-        'synopsis'     => filled($evento->descripcion) ? [$evento->descripcion] : ['Información del evento por confirmar.'],
-        'poster_color' => $evento->poster_color ?? '#7BB394',
-        'image_url'    => $evento->ruta_url,
-        'price_from'   => $priceFromDesc > 0 ? $priceFromDesc : 0,
-        'venue'        => 'Teatro Quasar',
-        'city'         => 'Medellín',
-        'dates'        => [[
-            'dow'   => Carbon::parse($evento->fecha_evento)->locale('es')->isoFormat('ddd'),
-            'day'   => Carbon::parse($evento->fecha_evento)->day,
-            'month' => Carbon::parse($evento->fecha_evento)->locale('es')->isoFormat('MMM'),
-        ]],
-        'times'        => [Carbon::parse($evento->fecha_evento)->format('H:i')],
-        'price'        => $priceFromDesc > 0 ? number_format($priceFromDesc, 0, ',', '.') : 'Por confirmar',
-        'showtimes'    => [[
-            'date' => Carbon::parse($evento->fecha_evento)->format('Y-m-d'),
-            'time' => Carbon::parse($evento->fecha_evento)->format('H:i'),
-        ]],
-    ];
-
-    return view('events.show', compact('event'));
+    abort(404, 'Evento no encontrado');
 })->name('events.show');
 
 // ─── Auth ────────────────────────────────────────────────────────────────────
