@@ -80,7 +80,7 @@
                     </div>
                     <div class="flex items-center gap-2">
                         <svg class="w-4 h-4 text-sage shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                        {{ $evento->venue }}
+                        {{ $evento->venue_name }}
                     </div>
                     <div class="flex items-center gap-2">
                         <svg class="w-4 h-4 text-sage shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
@@ -95,7 +95,7 @@
                         'title'   => $evento->nombre_evento,
                         'date'    => $evento->fecha_evento->translatedFormat('j M Y'),
                         'time'    => $evento->fecha_evento->format('H:i'),
-                        'venue'   => $evento->venue,
+                        'venue'   => $evento->venue_name,
                         'row'     => $asiento->fila,
                         'number'  => $asiento->numero,
                         'section' => $asiento->zona->nombre_zona,
@@ -158,7 +158,7 @@
                         </div>
                         <div class="flex items-center gap-2">
                             <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                            {{ $evento->venue }}
+                            {{ $evento->venue_name }}
                         </div>
                     </div>
                     <button
@@ -167,7 +167,7 @@
                             'title'   => $evento->nombre_evento,
                             'date'    => $evento->fecha_evento->translatedFormat('j M Y'),
                             'time'    => $evento->fecha_evento->format('H:i'),
-                            'venue'   => $evento->venue,
+                            'venue'   => $evento->venue_name,
                             'row'     => $asiento->fila,
                             'number'  => $asiento->numero,
                             'section' => $asiento->zona->nombre_zona,
