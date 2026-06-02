@@ -19,21 +19,26 @@ use Illuminate\Support\Facades\Schema;
 
 
 Route::get('/', function () {
-    try {
-        $events = Evento::with(['tipo', 'imagenes'])
-            ->where('activo', true)
-            ->whereNotNull('slug')
-            ->where('slug', '<>', '')
-            ->orderBy('fecha_evento')
-            ->take(6)
-            ->get();
-    } catch (\Throwable $exception) {
-        Log::warning('Home events unavailable from DB.', [
-            'message' => $exception->getMessage(),
-        ]);
+    // Usar EventService para obtener eventos destacados
+    $eventService = app(EventService::class);
+    $apiEvents = $eventService->featured(6);
 
-        $events = collect();
-    }
+    // Transformar a modelos con los datos necesarios para la vista
+    $events = collect($apiEvents)->map(function ($event) {
+        return (object) [
+            'id_evento' => $event['id'],
+            'nombre_evento' => $event['title'],
+            'slug' => $event['slug'],
+            'price_from' => $event['price_from'] > 0 ? $event['price_from'] : null,
+            'fecha_evento' => isset($event['showtimes'][0])
+                ? Carbon::parse($event['showtimes'][0]['date'] . ' ' . $event['showtimes'][0]['time'])
+                : now(),
+            'ruta_url' => $event['image_url'],
+            'tipo' => (object) ['nombre_tipo' => $event['category'] ?? 'Evento'],
+            'imagenes' => collect(),
+            'synopsis' => $event['synopsis'] ?? [],
+        ];
+    });
 
     return view('home', compact('events'));
 })->name('home');
