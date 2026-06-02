@@ -8,6 +8,7 @@ use Livewire\Component;
 
 class FavoriteButton extends Component
 {
+    public ?int $eventoId = null;
     public ?string $slug = null;
     public ?string $title = null;
     public ?string $category = null;
@@ -26,40 +27,33 @@ class FavoriteButton extends Component
         ?float $priceFrom = null,
         ?string $posterColor = null,
         ?string $imageUrl = null,
-    ): void
-    {
-        $this->slug = $slug;
-        $this->title = $title;
-        $this->category = $category;
-        $this->synopsis = $synopsis;
-        $this->priceFrom = $priceFrom;
+    ): void {
+        $this->eventoId    = $eventoId;
+        $this->slug        = $slug;
+        $this->title       = $title;
+        $this->category    = $category;
+        $this->synopsis    = $synopsis;
+        $this->priceFrom   = $priceFrom;
         $this->posterColor = $posterColor;
-        $this->imageUrl = $imageUrl;
+        $this->imageUrl    = $imageUrl;
 
-        if (Auth::check() && filled($this->slug)) {
-            $this->isFavorited = app(FavoriteService::class)->hasForUser(Auth::id(), $this->slug);
+        if (Auth::check() && $this->eventoId !== null) {
+            $this->isFavorited = app(FavoriteService::class)->hasForUser(Auth::id(), $this->eventoId);
         }
     }
 
-    public function toggle()
+    public function toggle(): void
     {
         if (! Auth::check()) {
-            return redirect()->route('login');
-        }
-
-        if (blank($this->slug) || blank($this->title)) {
+            $this->redirect(route('login'));
             return;
         }
 
-        $this->isFavorited = app(FavoriteService::class)->toggleForUser(Auth::id(), [
-            'slug' => $this->slug,
-            'title' => $this->title,
-            'category' => $this->category,
-            'synopsis' => $this->synopsis,
-            'price_from' => $this->priceFrom,
-            'poster_color' => $this->posterColor,
-            'image_url' => $this->imageUrl,
-        ]);
+        if ($this->eventoId === null) {
+            return;
+        }
+
+        $this->isFavorited = app(FavoriteService::class)->toggleForUser(Auth::id(), $this->eventoId);
 
         $this->dispatch('favorites-changed');
     }

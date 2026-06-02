@@ -25,21 +25,6 @@
                 {{ $event['title'] }}
             </h1>
 
-            @auth
-            <div class="mb-6">
-                <livewire:favorite-button
-                    :slug="$event['slug']"
-                    :title="$event['title']"
-                    :category="$event['category']"
-                    :synopsis="$event['synopsis'][0] ?? null"
-                    :priceFrom="$event['price_from'] ?? 0"
-                    :posterColor="$event['poster_color']"
-                    :imageUrl="$event['image_url'] ?? null"
-                    :key="'fav-event-'.$event['slug']"
-                />
-            </div>
-            @endauth
-
             <div class="flex flex-wrap gap-6 mb-8 text-on-surface-variant">
                 <div class="flex items-center gap-2">
                     <span class="material-symbols-outlined text-primary">schedule</span>
@@ -62,6 +47,21 @@
 
         {{-- Columna imagen --}}
         <div class="w-full md:w-1/2 relative min-h-[400px] bg-secondary-container flex items-center justify-center">
+            @auth
+            <div class="absolute top-4 right-4 z-10">
+                <livewire:favorite-button
+                    :eventoId="$event['id'] ?? null"
+                    :slug="$event['slug']"
+                    :title="$event['title']"
+                    :category="$event['category']"
+                    :synopsis="$event['synopsis'][0] ?? null"
+                    :priceFrom="$event['price_from'] ?? 0"
+                    :posterColor="$event['poster_color']"
+                    :imageUrl="$event['image_url'] ?? null"
+                    :key="'fav-event-'.$event['slug']"
+                />
+            </div>
+            @endauth
             <span class="material-symbols-outlined text-primary/20" style="font-size: 140px">curtains</span>
             <div class="absolute inset-0 bg-gradient-to-r from-surface-container-low via-transparent to-transparent hidden md:block"></div>
         </div>

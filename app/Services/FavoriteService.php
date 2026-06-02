@@ -2,62 +2,35 @@
 
 namespace App\Services;
 
+use App\Models\Favorito;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Cache;
 
 class FavoriteService
 {
     public function allForUser(int $userId): Collection
     {
-        return collect(Cache::get($this->key($userId), []))->values();
+        $eventoIds = Favorito::where('user_id', $userId)->pluck('evento_id');
+
+        return app(EventService::class)->all()
+            ->filter(fn(array $event) => $eventoIds->contains($event['id']))
+            ->values();
     }
 
-    public function countForUser(int $userId): int
+    public function hasForUser(int $userId, int $eventoId): bool
     {
-        return $this->allForUser($userId)->count();
+        return Favorito::where('user_id', $userId)->where('evento_id', $eventoId)->exists();
     }
 
-    public function hasForUser(int $userId, string $slug): bool
+    public function toggleForUser(int $userId, int $eventoId): bool
     {
-        return $this->allForUser($userId)->contains(fn (array $favorite) => ($favorite['slug'] ?? null) === $slug);
-    }
+        $existing = Favorito::where('user_id', $userId)->where('evento_id', $eventoId)->first();
 
-    public function toggleForUser(int $userId, array $event): bool
-    {
-        $favorites = $this->allForUser($userId);
-        $slug = $event['slug'] ?? null;
-
-        if (blank($slug)) {
+        if ($existing) {
+            $existing->delete();
             return false;
         }
 
-        if ($this->hasForUser($userId, $slug)) {
-            $favorites = $favorites
-                ->reject(fn (array $favorite) => ($favorite['slug'] ?? null) === $slug)
-                ->values();
-
-            Cache::forever($this->key($userId), $favorites->all());
-
-            return false;
-        }
-
-        $favorites->push([
-            'slug' => $slug,
-            'title' => $event['title'] ?? 'Evento',
-            'category' => $event['category'] ?? 'General',
-            'synopsis' => $event['synopsis'] ?? '',
-            'poster_color' => $event['poster_color'] ?? '#7BB394',
-            'image_url' => $event['image_url'] ?? null,
-            'price_from' => (float) ($event['price_from'] ?? 0),
-        ]);
-
-        Cache::forever($this->key($userId), $favorites->unique('slug')->values()->all());
-
+        Favorito::create(['user_id' => $userId, 'evento_id' => $eventoId]);
         return true;
-    }
-
-    private function key(int $userId): string
-    {
-        return "favorites:user:{$userId}";
     }
 }

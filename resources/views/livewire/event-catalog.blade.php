@@ -45,7 +45,7 @@
                     <a href="{{ route('events.show', $event['slug']) }}"
                        class="bg-white rounded-card shadow-soft overflow-hidden hover:-translate-y-1 transition-all duration-300 block">
                         <div class="aspect-[4/3] flex items-center justify-center bg-cover bg-center"
-                             style="{{ filled($event['image_url']) ? 'background-image: linear-gradient(rgba(45, 74, 62, .25), rgba(45, 74, 62, .25)), url('.$event['image_url'].')' : 'background-color: '.$event['poster_color'] }}">
+                             style="{{ filled($event['image_url']) ? 'background-image: linear-gradient(rgba(45, 74, 62, .25), rgba(45, 74, 62, .25)), url(\''.$event['image_url'].'\')' : 'background-color: '.$event['poster_color'] }}">
                             <span class="font-display text-4xl text-white/90 px-6 text-center drop-shadow">
                                 {{ $event['title'] }}
                             </span>
@@ -73,6 +73,7 @@
                     @auth
                         <div class="absolute top-2 right-2 z-10">
                             <livewire:favorite-button
+                                :eventoId="$event['id'] ?? null"
                                 :slug="$event['slug']"
                                 :title="$event['title']"
                                 :category="$event['category']"

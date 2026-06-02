@@ -1,6 +1,9 @@
 <button
     wire:click="toggle"
-    class="p-2 rounded-full bg-white/80 hover:bg-white shadow transition-all cursor-pointer"
+    x-data="{ popping: false }"
+    @click="popping = true; setTimeout(() => popping = false, 300)"
+    :class="popping ? 'scale-125' : 'scale-100'"
+    class="p-2 rounded-full bg-white/80 hover:bg-white shadow transition-all duration-200 cursor-pointer origin-center"
     title="{{ $isFavorited ? 'Quitar de favoritos' : 'Agregar a favoritos' }}"
     aria-label="{{ $isFavorited ? 'Quitar de favoritos' : 'Agregar a favoritos' }}"
 >
