@@ -94,12 +94,17 @@ class EventService
                 ->where('publicado', true)
                 ->get()
                 ->map(function (Evento $evento): array {
+                    $synopsis = $evento->synopsis ?? [];
+                    if (empty($synopsis) && filled($evento->descripcion)) {
+                        $synopsis = [$evento->descripcion];
+                    }
+
                     return [
                         'id'              => $evento->getKey(),
                         'slug'            => $evento->slug,
                         'title'           => $evento->nombre_evento,
                         'category'        => $evento->tipo?->nombre_tipo ?? 'General',
-                        'synopsis'        => $evento->synopsis ?? [],
+                        'synopsis'        => $synopsis,
                         'poster_color'    => $evento->poster_color ?? '#7BB394',
                         'image_url'       => $evento->ruta_url,
                         'price_from'      => (int) $evento->price_from,
