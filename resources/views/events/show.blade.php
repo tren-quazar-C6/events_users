@@ -31,7 +31,7 @@
                     :slug="$event['slug']"
                     :title="$event['title']"
                     :category="$event['category']"
-                    :synopsis="$event['synopsis'][0] ?? null"
+                    :synopsis="$event['synopsis'] ?? null"
                     :priceFrom="$event['price_from'] ?? 0"
                     :posterColor="$event['poster_color']"
                     :imageUrl="$event['image_url'] ?? null"
@@ -56,7 +56,18 @@
             </div>
 
             <p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed max-w-xl">
-                {{ $event['synopsis'][0] ?? '' }}
+                @php
+                    $synopsisText = '';
+                    if (is_array($event['synopsis'])) {
+                        $synopsisText = $event['synopsis'][0] ?? '';
+                    } else {
+                        $synopsisText = $event['synopsis'] ?? '';
+                    }
+                    if (is_array($synopsisText)) {
+                        $synopsisText = $synopsisText[0] ?? '';
+                    }
+                @endphp
+                {{ $synopsisText }}
             </p>
         </div>
 
@@ -80,8 +91,20 @@
         <section>
             <h2 class="font-headline-md text-headline-md text-primary mb-6">Sinopsis</h2>
             <div class="space-y-4 max-w-3xl">
-                @foreach ($event['synopsis'] as $paragraph)
-                <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">{{ $paragraph }}</p>
+                @php
+                    $synopsisArray = $event['synopsis'] ?? [];
+                    if (!is_array($synopsisArray)) {
+                        $synopsisArray = [$synopsisArray];
+                    }
+                @endphp
+                @foreach ($synopsisArray as $paragraph)
+                    @php
+                        $para = $paragraph;
+                        if (is_array($para)) {
+                            $para = $para[0] ?? '';
+                        }
+                    @endphp
+                    <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">{{ $para }}</p>
                 @endforeach
             </div>
         </section>

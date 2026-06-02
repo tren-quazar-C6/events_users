@@ -8,47 +8,44 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Evento extends Model
 {
+    protected $table = 'EVENTOS';
+    protected $primaryKey = 'id_evento';
+    public $timestamps = false;
+
     protected $fillable = [
-        'tipo_evento_id', 'staff_id', 'slug', 'nombre_evento', 'synopsis',
+        'id_tipo_evento', 'slug', 'nombre_evento', 'synopsis',
         'author', 'duration', 'poster_color', 'venue', 'city', 'price_from',
         'fecha_evento', 'fecha_inicio_ventas', 'fecha_fin_ventas',
         'capacidad_total', 'publicado', 'activo',
-        'fecha_cancelacion', 'motivo_cancelacion',
     ];
 
     protected $casts = [
-        'synopsis'           => 'array',
-        'fecha_evento'       => 'datetime',
-        'fecha_inicio_ventas'=> 'datetime',
-        'fecha_fin_ventas'   => 'datetime',
-        'fecha_cancelacion'  => 'datetime',
-        'publicado'          => 'boolean',
-        'activo'             => 'boolean',
-        'price_from'         => 'decimal:2',
+        'synopsis'            => 'array',
+        'fecha_evento'        => 'datetime',
+        'fecha_inicio_ventas' => 'datetime',
+        'fecha_fin_ventas'    => 'datetime',
+        'publicado'           => 'boolean',
+        'activo'              => 'boolean',
+        'price_from'          => 'decimal:2',
     ];
 
     public function tipo(): BelongsTo
     {
-        return $this->belongsTo(TipoEvento::class, 'tipo_evento_id');
-    }
-
-    public function staff(): BelongsTo
-    {
-        return $this->belongsTo(Staff::class, 'staff_id');
+        return $this->belongsTo(TipoEvento::class, 'id_tipo_evento', 'id_tipo_evento');
     }
 
     public function imagenes(): HasMany
     {
-        return $this->hasMany(Imagen::class, 'evento_id');
+        return $this->hasMany(Imagen::class, 'evento_id', 'id_evento');
     }
 
     public function eventoAsientos(): HasMany
     {
-        return $this->hasMany(EventoAsiento::class, 'evento_id');
+        return $this->hasMany(EventoAsiento::class, 'id_evento', 'id_evento');
     }
 
     public function favoritos(): HasMany
     {
-        return $this->hasMany(Favorito::class, 'evento_id');
+        return $this->hasMany(Favorito::class, 'evento_id', 'id_evento');
     }
 }

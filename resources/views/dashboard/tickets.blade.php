@@ -236,13 +236,13 @@
                 </div>
 
                 <div class="flex items-center gap-3 flex-wrap justify-center">
-                    <template x-if="ticket?.status === 'CONFIRMADO'">
+                    <template x-if="ticket?.status === 'PAGADO' || ticket?.status === 'CONFIRMADO'">
                         <span class="flex items-center gap-1.5 bg-sage-light text-sage-dark text-xs font-semibold px-4 py-1.5 rounded-full">
                             <span class="w-2 h-2 rounded-full bg-sage inline-block animate-pulse"></span>
                             Activo
                         </span>
                     </template>
-                    <template x-if="ticket?.status === 'USADO'">
+                    <template x-if="ticket?.status === 'USADO' || ticket?.status === 'ANULADO'">
                         <span class="flex items-center gap-1.5 bg-cream text-sage-dark/60 text-xs font-medium px-4 py-1.5 rounded-full border border-sage/10">
                             <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                             Usado

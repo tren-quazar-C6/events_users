@@ -11,7 +11,7 @@ class FavoriteButton extends Component
     public ?string $slug = null;
     public ?string $title = null;
     public ?string $category = null;
-    public ?string $synopsis = null;
+    public mixed $synopsis = null;
     public ?float $priceFrom = null;
     public ?string $posterColor = null;
     public ?string $imageUrl = null;
@@ -22,7 +22,7 @@ class FavoriteButton extends Component
         ?string $slug = null,
         ?string $title = null,
         ?string $category = null,
-        ?string $synopsis = null,
+        mixed $synopsis = null,
         ?float $priceFrom = null,
         ?string $posterColor = null,
         ?string $imageUrl = null,
@@ -31,7 +31,8 @@ class FavoriteButton extends Component
         $this->slug = $slug;
         $this->title = $title;
         $this->category = $category;
-        $this->synopsis = $synopsis;
+        // Convert array synopsis to string (take first element)
+        $this->synopsis = is_array($synopsis) ? ($synopsis[0] ?? null) : $synopsis;
         $this->priceFrom = $priceFrom;
         $this->posterColor = $posterColor;
         $this->imageUrl = $imageUrl;

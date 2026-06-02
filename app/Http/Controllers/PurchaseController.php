@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Jobs\SendEmailViaN8n;
 use App\Mail\PurchaseConfirmation;
-use App\Models\EstadoTicket;
 use App\Models\Evento;
 use App\Models\EventoAsiento;
 use App\Models\Ticket;
@@ -32,7 +31,6 @@ class PurchaseController extends Controller
 
         if (! $this->hasSalesTables()) {
             $event = app(EventService::class)->findBySlug($slug);
-
             abort_if(! $event, 404);
 
             $selectedSeats = app(EventService::class)
@@ -48,17 +46,20 @@ class PurchaseController extends Controller
             app(PurchaseFlowService::class)->buildCheckout($token, [
                 ...$event,
                 'venue' => 'Por confirmar',
-                'city' => '',
+                'city'  => '',
             ], $selectedSeats);
 
             return redirect()->route('checkout', $token);
         }
 
-        $evento = Evento::where('slug', $slug)->firstOrFail();
+        $eventData = app(EventService::class)->findBySlug($slug);
+        abort_if(! $eventData, 404);
 
-        $eventoAsientos = DB::transaction(function () use ($ids, $evento) {
-            $eas = EventoAsiento::where('evento_id', $evento->id)
-                ->whereIn('id', $ids)
+        $evento = Evento::find($eventData['id']) ?? Evento::firstOrFail();
+
+        $result = DB::transaction(function () use ($ids, $evento) {
+            $eas = EventoAsiento::where('id_evento', $evento->id_evento)
+                ->whereIn('id_evento_asiento', $ids)
                 ->lockForUpdate()
                 ->get();
 
@@ -68,27 +69,34 @@ class PurchaseController extends Controller
                 return null;
             }
 
-            $expira = now()->addMinutes(15);
             foreach ($disponibles as $ea) {
-                $ea->update([
-                    'estado'          => 'RESERVADO',
-                    'fecha_reserva'   => now(),
-                    'reserva_expira'  => $expira,
-                ]);
+                $ea->update(['estado' => 'RESERVADO']);
             }
 
-            return $disponibles;
+            // Precios vía EVENTO_ZONA
+            $precios = DB::table('EVENTO_ASIENTO as ea')
+                ->join('ASIENTOS as a', 'a.id_asiento', '=', 'ea.id_asiento')
+                ->join('EVENTO_ZONA as ez', function ($j) use ($evento) {
+                    $j->on('ez.id_evento', '=', 'ea.id_evento')
+                      ->on('ez.id_zona', '=', 'a.id_zona');
+                })
+                ->whereIn('ea.id_evento_asiento', $disponibles->pluck('id_evento_asiento'))
+                ->pluck('ez.precio', 'ea.id_evento_asiento');
+
+            return ['asientos' => $disponibles, 'precios' => $precios];
         });
 
-        if (!$eventoAsientos) {
+        if (! $result) {
             return back()->with('error', 'Algunos asientos ya no están disponibles. Por favor selecciona de nuevo.');
         }
 
         $token = Str::random(40);
 
         session(["checkout:{$token}" => [
-            'evento_id'          => $evento->id,
-            'evento_asiento_ids' => $eventoAsientos->pluck('id')->all(),
+            'id_evento'          => $evento->id_evento,
+            'slug'               => $slug,
+            'evento_asiento_ids' => $result['asientos']->pluck('id_evento_asiento')->all(),
+            'precios'            => $result['precios']->toArray(),
             'expira'             => now()->addMinutes(15)->toIso8601String(),
         ]]);
 
@@ -101,26 +109,32 @@ class PurchaseController extends Controller
             $data = app(PurchaseFlowService::class)->getCheckout($token);
             abort_if(! $data, 404, 'Sesion de checkout invalida o expirada.');
 
-            $evento = app(PurchaseFlowService::class)->eventFromApi($data['event']);
+            $evento         = app(PurchaseFlowService::class)->eventFromApi($data['event']);
             $eventoAsientos = app(PurchaseFlowService::class)->seatCollection(collect($data['seats']));
-            $subtotal = $eventoAsientos->sum('precio');
-            $fee = 3500;
-            $total = $subtotal + $fee;
+            $subtotal       = $eventoAsientos->sum('precio');
+            $fee            = 3500;
+            $total          = $subtotal + $fee;
 
             return view('checkout.index', compact('token', 'data', 'evento', 'eventoAsientos', 'subtotal', 'fee', 'total'));
         }
 
         $data = session("checkout:{$token}");
-        abort_if(!$data, 404, 'Sesión de checkout inválida o expirada.');
+        abort_if(! $data, 404, 'Sesión de checkout inválida o expirada.');
 
-        $evento = Evento::findOrFail($data['evento_id']);
-        $eventoAsientos = EventoAsiento::with(['asiento.zona'])
-            ->whereIn('id', $data['evento_asiento_ids'])
+        $evento         = Evento::findOrFail($data['id_evento']);
+        // Asegurar que evento tenga slug (de sesión si no lo tiene en BD)
+        if (! $evento->slug) {
+            $evento->slug = $data['slug'] ?? null;
+        }
+
+        $eventoAsientos = EventoAsiento::with(['asiento'])
+            ->whereIn('id_evento_asiento', $data['evento_asiento_ids'])
             ->get();
 
-        $subtotal = $eventoAsientos->sum('precio');
-        $fee = 3500;
-        $total = $subtotal + $fee;
+        $precios  = $data['precios'] ?? [];
+        $subtotal = array_sum($precios);
+        $fee      = 3500;
+        $total    = $subtotal + $fee;
 
         return view('checkout.index', compact('token', 'data', 'evento', 'eventoAsientos', 'subtotal', 'fee', 'total'));
     }
@@ -132,41 +146,28 @@ class PurchaseController extends Controller
             abort_if(! $data, 404, 'Sesion de checkout invalida o expirada.');
 
             $venta = app(PurchaseFlowService::class)->createPurchase(
-                userId: Auth::id(),
-                userName: Auth::user()->name,
+                userId:    Auth::id(),
+                userName:  Auth::user()->name,
                 userEmail: Auth::user()->email,
-                event: $data['event'],
+                event:     $data['event'],
                 selectedSeats: collect($data['seats']),
             );
 
             app(PurchaseFlowService::class)->forgetCheckout($token);
 
-            $html = view('emails.purchase-confirmation', ['venta' => $venta])->render();
-
-            if (filled(config('services.n8n.email_webhook'))) {
-                SendEmailViaN8n::dispatch(
-                    type: 'purchase_confirmation',
-                    to: $venta->user->email,
-                    subject: "Confirmación de compra · {$venta->referencia_interna}",
-                    html: $html,
-                    meta: ['reference' => $venta->referencia_interna, 'user_id' => $venta->user_id],
-                );
-            } else {
-                Mail::html($html, function ($message) use ($venta) {
-                    $message->to($venta->user->email)
-                        ->subject("Confirmación de compra · {$venta->referencia_interna}");
-                });
-            }
+            $this->sendConfirmationEmail($venta->referencia_interna, Auth::user()->email);
 
             return redirect()->route('purchase.confirmation', $venta->referencia_interna);
         }
 
         $data = session("checkout:{$token}");
-        abort_if(!$data, 404, 'Sesión de checkout inválida o expirada.');
+        abort_if(! $data, 404, 'Sesión de checkout inválida o expirada.');
 
-        $venta = DB::transaction(function () use ($data) {
-            $eventoAsientos = EventoAsiento::with(['asiento.zona', 'evento'])
-                ->whereIn('id', $data['evento_asiento_ids'])
+        $usuarioId = $this->resolveUsuarioId(Auth::user());
+        $precios   = $data['precios'] ?? [];
+
+        $venta = DB::transaction(function () use ($data, $usuarioId, $precios) {
+            $eventoAsientos = EventoAsiento::whereIn('id_evento_asiento', $data['evento_asiento_ids'])
                 ->where('estado', 'RESERVADO')
                 ->lockForUpdate()
                 ->get();
@@ -175,29 +176,28 @@ class PurchaseController extends Controller
                 return null;
             }
 
-            $subtotal = $eventoAsientos->sum('precio');
+            $subtotal = array_sum($precios);
             $fee      = 3500;
 
             $venta = Venta::create([
-                'user_id'        => Auth::id(),
-                'tipo_venta'     => 'ONLINE',
-                'subtotal'       => $subtotal,
-                'cargo_servicio' => $fee,
-                'total'          => $subtotal + $fee,
-                'moneda'         => 'COP',
-                'estado_pago'    => 'APPROVED',
-                'metodo_pago'    => 'MOCK',
-                'fecha_pago'     => now(),
+                'id_usuario'  => $usuarioId,
+                'tipo_venta'  => 'ONLINE',
+                'total'       => $subtotal + $fee,
+                'estado_pago' => 'APPROVED',
+                'metodo_pago' => 'MOCK',
+                'fecha_pago'  => now(),
+                'fecha_venta' => now(),
             ]);
 
-            $estadoId = EstadoTicket::where('nombre_estado', 'CONFIRMADO')->value('id');
-
             foreach ($eventoAsientos as $ea) {
-                Ticket::create([
-                    'venta_id'          => $venta->id,
-                    'estado_ticket_id'  => $estadoId,
-                    'evento_asiento_id' => $ea->id,
-                ]);
+                Ticket::updateOrCreate(
+                    ['id_evento_asiento' => $ea->id_evento_asiento],
+                    [
+                        'id_venta'          => $venta->id_venta,
+                        'id_estado_ticket'  => 2,   // PAGADO
+                        'precio_pagado'     => $precios[$ea->id_evento_asiento] ?? 0,
+                    ]
+                );
 
                 $ea->update(['estado' => 'VENDIDO']);
             }
@@ -205,7 +205,7 @@ class PurchaseController extends Controller
             return $venta;
         });
 
-        if (!$venta) {
+        if (! $venta) {
             session()->forget("checkout:{$token}");
             return redirect()->route('catalog')
                 ->with('error', 'La reserva expiró. Por favor selecciona tus asientos nuevamente.');
@@ -213,21 +213,7 @@ class PurchaseController extends Controller
 
         session()->forget("checkout:{$token}");
 
-        $venta->load('tickets.eventoAsiento.asiento.zona', 'tickets.eventoAsiento.evento', 'user');
-
-        $html = view('emails.purchase-confirmation', ['venta' => $venta])->render();
-
-        if (filled(config('services.n8n.email_webhook'))) {
-            SendEmailViaN8n::dispatch(
-                type: 'purchase_confirmation',
-                to: $venta->user->email,
-                subject: "Confirmación de compra · {$venta->referencia_interna}",
-                html: $html,
-                meta: ['venta_id' => $venta->id, 'user_id' => $venta->user_id],
-            );
-        } else {
-            Mail::to($venta->user)->send(new PurchaseConfirmation($venta));
-        }
+        $this->sendConfirmationEmail($venta->referencia_interna, Auth::user()->email);
 
         return redirect()->route('purchase.confirmation', $venta->referencia_interna);
     }
@@ -241,9 +227,14 @@ class PurchaseController extends Controller
             return view('checkout.confirmation', compact('venta'));
         }
 
-        $venta = Venta::with('tickets.eventoAsiento.asiento.zona', 'tickets.eventoAsiento.evento')
+        $usuarioId = $this->resolveUsuarioId(Auth::user());
+
+        $venta = Venta::with([
+            'tickets.eventoAsiento.evento',
+            'tickets.estadoTicket',
+        ])
             ->where('referencia_interna', $reference)
-            ->where('user_id', Auth::id())
+            ->where('id_usuario', $usuarioId)
             ->firstOrFail();
 
         return view('checkout.confirmation', compact('venta'));
@@ -251,9 +242,39 @@ class PurchaseController extends Controller
 
     private function hasSalesTables(): bool
     {
-        return Schema::hasTable('eventos')
-            && Schema::hasTable('evento_asientos')
-            && Schema::hasTable('ventas')
-            && Schema::hasTable('tickets');
+        return Schema::hasTable('EVENTOS')
+            && Schema::hasTable('EVENTO_ASIENTO')
+            && Schema::hasTable('VENTAS')
+            && Schema::hasTable('TICKETS');
+    }
+
+    private function resolveUsuarioId(\App\Models\User $user): int
+    {
+        $id = DB::table('USUARIO')
+            ->where('email', $user->email)
+            ->value('id_usuario');
+
+        if ($id) return $id;
+
+        return DB::table('USUARIO')->insertGetId([
+            'nombre'         => $user->name,
+            'email'          => $user->email,
+            'telefono'       => $user->telefono ?? null,
+            'activo'         => 1,
+            'fecha_registro' => now(),
+        ]);
+    }
+
+    private function sendConfirmationEmail(string $referencia, string $email): void
+    {
+        if (filled(config('services.n8n.email_webhook'))) {
+            SendEmailViaN8n::dispatch(
+                type:    'purchase_confirmation',
+                to:      $email,
+                subject: "Confirmación de compra · {$referencia}",
+                html:    '',
+                meta:    ['reference' => $referencia],
+            );
+        }
     }
 }

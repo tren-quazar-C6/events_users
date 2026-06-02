@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Favorito extends Model
 {
+    protected $table = 'FAVORITOS';
+    public $timestamps = false;
+
     protected $fillable = ['user_id', 'evento_id'];
 
     public function user(): BelongsTo
@@ -16,6 +19,6 @@ class Favorito extends Model
 
     public function evento(): BelongsTo
     {
-        return $this->belongsTo(Evento::class, 'evento_id');
+        return $this->belongsTo(Evento::class, 'evento_id', 'id_evento');
     }
 }
