@@ -11,7 +11,7 @@ class FavoriteButton extends Component
     public ?string $slug = null;
     public ?string $title = null;
     public ?string $category = null;
-    public ?string $synopsis = null;
+    public mixed $synopsis = null;
     public ?float $priceFrom = null;
     public ?string $posterColor = null;
     public ?string $imageUrl = null;
