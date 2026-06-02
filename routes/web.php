@@ -19,26 +19,20 @@ use Illuminate\Support\Facades\Schema;
 
 
 Route::get('/', function () {
-    // Usar EventService para obtener eventos destacados
-    $eventService = app(EventService::class);
-    $apiEvents = $eventService->featured(6);
+    try {
+        $events = Evento::with('tipo')
+            ->where('activo', true)
+            ->where('publicado', true)
+            ->orderBy('fecha_evento')
+            ->take(6)
+            ->get();
+    } catch (\Throwable $exception) {
+        Log::warning('Home events unavailable from DB.', [
+            'message' => $exception->getMessage(),
+        ]);
 
-    // Transformar a modelos con los datos necesarios para la vista
-    $events = collect($apiEvents)->map(function ($event) {
-        return (object) [
-            'id_evento' => $event['id'],
-            'nombre_evento' => $event['title'],
-            'slug' => $event['slug'],
-            'price_from' => $event['price_from'] > 0 ? $event['price_from'] : null,
-            'fecha_evento' => isset($event['showtimes'][0])
-                ? Carbon::parse($event['showtimes'][0]['date'] . ' ' . $event['showtimes'][0]['time'])
-                : now(),
-            'ruta_url' => $event['image_url'],
-            'tipo' => (object) ['nombre_tipo' => $event['category'] ?? 'Evento'],
-            'imagenes' => collect(),
-            'synopsis' => $event['synopsis'] ?? [],
-        ];
-    });
+        $events = collect();
+    }
 
     return view('home', compact('events'));
 })->name('home');
@@ -77,29 +71,35 @@ Route::get('/events/{slug}', function ($slug) {
         return view('events.show', compact('event'));
     }
 
-    $evento = Evento::with('tipo')->where('slug', $slug)->where('activo', true)->firstOrFail();
+    $evento = Evento::with('tipo')->where('nombre_evento', 'like', "%$slug%")->where('activo', true)->first();
+
+    if (!$evento) {
+        abort(404, 'Evento no encontrado');
+    }
+
+    $priceFromDesc = $evento->price_from_description;
 
     $event = [
-        'id' => $evento->id,
-        'slug' => $evento->slug,
-        'title' => $evento->nombre_evento,
-        'category' => $evento->tipo->nombre_tipo ?? '',
-        'author' => $evento->author ?? 'Tickify',
-        'duration' => $evento->duration ?? 'Por confirmar',
-        'synopsis' => $evento->synopsis ?? (filled($evento->descripcion) ? [$evento->descripcion] : ['Información del evento por confirmar.']),
+        'id'           => $evento->id_evento,
+        'slug'         => \Illuminate\Support\Str::slug($evento->nombre_evento),
+        'title'        => $evento->nombre_evento,
+        'category'     => $evento->tipo->nombre_tipo ?? '',
+        'author'       => 'Tickify',
+        'duration'     => 'Por confirmar',
+        'synopsis'     => filled($evento->descripcion) ? [$evento->descripcion] : ['Información del evento por confirmar.'],
         'poster_color' => $evento->poster_color ?? '#7BB394',
-        'image_url' => $evento->ruta_url,
-        'price_from' => $evento->price_from ?? 0,
-        'venue' => $evento->venue ?? 'Teatro Quasar',
-        'city' => $evento->city ?? 'Medellín',
+        'image_url'    => $evento->ruta_url,
+        'price_from'   => $priceFromDesc > 0 ? $priceFromDesc : 0,
+        'venue'        => 'Teatro Quasar',
+        'city'         => 'Medellín',
         'dates'        => [[
             'dow'   => Carbon::parse($evento->fecha_evento)->locale('es')->isoFormat('ddd'),
             'day'   => Carbon::parse($evento->fecha_evento)->day,
             'month' => Carbon::parse($evento->fecha_evento)->locale('es')->isoFormat('MMM'),
         ]],
-        'times'  => [Carbon::parse($evento->fecha_evento)->format('H:i')],
-        'price'  => $evento->price_from > 0 ? number_format($evento->price_from, 0, ',', '.') : 'Por confirmar',
-        'showtimes' => [[
+        'times'        => [Carbon::parse($evento->fecha_evento)->format('H:i')],
+        'price'        => $priceFromDesc > 0 ? number_format($priceFromDesc, 0, ',', '.') : 'Por confirmar',
+        'showtimes'    => [[
             'date' => Carbon::parse($evento->fecha_evento)->format('Y-m-d'),
             'time' => Carbon::parse($evento->fecha_evento)->format('H:i'),
         ]],

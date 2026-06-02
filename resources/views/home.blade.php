@@ -57,8 +57,11 @@
                             </p>
                             <div class="mt-3 flex items-center justify-between">
                                 <p class="text-sage-dark/60 text-xs">{{ $event->fecha_evento?->translatedFormat('l j \\d\\e F · H:i') }}</p>
-                                @if (isset($event->price_from) && $event->price_from > 0)
-                                    <span class="font-semibold text-sage">Desde ${{ number_format($event->price_from, 0, ',', '.') }}</span>
+                                @php
+                                    $price = $event->price_from_description ?? 0;
+                                @endphp
+                                @if ($price > 0)
+                                    <span class="font-semibold text-sage">Desde ${{ number_format($price, 0, ',', '.') }}</span>
                                 @endif
                             </div>
                             @if (filled($event->slug))

@@ -48,4 +48,16 @@ class Evento extends Model
     {
         return $this->hasMany(Favorito::class, 'evento_id', 'id_evento');
     }
+
+    // Extraer precio desde la descripción
+    public function getPriceFromDescriptionAttribute(): int
+    {
+        // Buscar patrón: "Precio desde: $XXX.XXX COP" o "$180.000 COP"
+        if (preg_match('/\$\s*([\d\.]+)\s*COP/', $this->descripcion ?? '', $matches)) {
+            $price = str_replace('.', '', $matches[1]);
+            return (int) $price;
+        }
+
+        return 0;
+    }
 }
