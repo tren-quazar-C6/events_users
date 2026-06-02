@@ -251,9 +251,9 @@ class PurchaseController extends Controller
 
     private function hasSalesTables(): bool
     {
-        return Schema::hasTable('eventos')
-            && Schema::hasTable('evento_asientos')
-            && Schema::hasTable('ventas')
-            && Schema::hasTable('tickets');
+        return Schema::hasTable('EVENTOS')
+            && Schema::hasTable('EVENTO_ASIENTO')
+            && Schema::hasTable('VENTAS')
+            && Schema::hasTable('TICKETS');
     }
 }

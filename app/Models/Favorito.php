@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Favorito extends Model
 {
+    protected $table = 'FAVORITOS';
+
     protected $fillable = ['user_id', 'evento_id'];
 
     public function user(): BelongsTo

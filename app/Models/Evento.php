@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Evento extends Model
 {
+    protected $table = 'EVENTOS';
+
     protected $fillable = [
         'tipo_evento_id', 'staff_id', 'slug', 'nombre_evento', 'synopsis',
         'author', 'duration', 'poster_color', 'venue', 'city', 'price_from',

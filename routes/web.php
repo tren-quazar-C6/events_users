@@ -98,7 +98,7 @@ Route::middleware('auth')->group(function () {
     // ─── Dashboard sub-páginas ───────────────────────────────────────────
     Route::get('/dashboard/tickets', function () {
         $user = Auth::user();
-        $hasSalesTables = Schema::hasTable('ventas') && Schema::hasTable('tickets') && Schema::hasTable('estado_tickets');
+        $hasSalesTables = Schema::hasTable('VENTAS') && Schema::hasTable('TICKETS') && Schema::hasTable('ESTADO_TICKETS');
 
         if (! $hasSalesTables) {
             $tickets = app(PurchaseFlowService::class)->ticketsForUser($user->id);
