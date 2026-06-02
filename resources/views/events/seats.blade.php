@@ -20,12 +20,19 @@
                 </span>
             </div>
             <h1 class="font-headline-lg text-headline-lg text-on-surface">{{ $event['title'] }}</h1>
-            <p class="font-body-md text-body-md text-on-surface-variant mt-2 flex flex-wrap items-center gap-2">
-                <span class="material-symbols-outlined" style="font-size: 20px">calendar_today</span>
-                {{ \Carbon\Carbon::parse($event['showtimes'][0]['date'])->translatedFormat('l j \\d\\e F') }} · {{ $event['showtimes'][0]['time'] }}h
-                <span class="text-outline-variant mx-1">|</span>
-                <span class="material-symbols-outlined" style="font-size: 20px">location_on</span>
-                {{ $event['venue'] }}
+            <p class="font-body-md text-body-md text-on-surface-variant mt-2 flex flex-wrap items-center gap-4">
+                <span class="flex items-center gap-2">
+                    <span class="material-symbols-outlined" style="font-size: 20px">calendar_today</span>
+                    {{ \Carbon\Carbon::parse($event['showtimes'][0]['date'])->translatedFormat('l j \\d\\e F') }} · {{ $event['showtimes'][0]['time'] }}h
+                </span>
+                <span class="flex items-center gap-2">
+                    <span class="material-symbols-outlined" style="font-size: 20px">location_on</span>
+                    {{ $event['venue'] }}
+                </span>
+                <span class="flex items-center gap-2">
+                    <span class="material-symbols-outlined" style="font-size: 20px">local_offer</span>
+                    Desde ${{ $event['price_from'] > 0 ? number_format($event['price_from'], 0, ',', '.') : 'Por confirmar' }}
+                </span>
             </p>
         </div>
 

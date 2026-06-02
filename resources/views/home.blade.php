@@ -55,14 +55,18 @@
                             <p class="text-sage-dark/70 text-sm mt-2">
                                 {{ \Illuminate\Support\Str::limit(implode(' ', (array) ($event->synopsis ?? [])), 120) ?: 'Próximamente más información de esta obra.' }}
                             </p>
-                            <div class="mt-3 flex items-center justify-between">
-                                <p class="text-sage-dark/60 text-xs">{{ $event->fecha_evento?->translatedFormat('l j \\d\\e F · H:i') }}</p>
-                                @php
-                                    $price = $event->price_from_description ?? 0;
-                                @endphp
-                                @if ($price > 0)
-                                    <span class="font-semibold text-sage">Desde ${{ number_format($price, 0, ',', '.') }}</span>
-                                @endif
+                            <div class="mt-3 space-y-2 text-sage-dark/60 text-xs">
+                                <div class="flex items-center gap-2">
+                                    <span class="material-symbols-outlined" style="font-size: 16px">calendar_today</span>
+                                    {{ $event->formatted_date }} · {{ $event->formatted_time }}
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="material-symbols-outlined" style="font-size: 16px">location_on</span>
+                                    {{ $event->venue_name }}
+                                </div>
+                                <div class="font-semibold text-sage">
+                                    Desde ${{ $event->formatted_price }}
+                                </div>
                             </div>
                             @if (filled($event->slug))
                                 <div class="mt-4 flex items-center gap-4">

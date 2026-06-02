@@ -33,7 +33,11 @@
                     </p>
                     <p class="flex items-center gap-2">
                         <span class="material-symbols-outlined" style="font-size:18px">location_on</span>
-                        {{ $evento->venue }}, {{ $evento->city }}
+                        {{ $evento->venue_name }}, {{ $evento->city_name }}
+                    </p>
+                    <p class="flex items-center gap-2">
+                        <span class="material-symbols-outlined" style="font-size:18px">local_offer</span>
+                        Desde ${{ $evento->formatted_price }}
                     </p>
                 </div>
             </div>

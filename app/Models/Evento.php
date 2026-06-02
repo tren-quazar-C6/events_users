@@ -60,4 +60,31 @@ class Evento extends Model
 
         return 0;
     }
+
+    // Getters para información del evento
+    public function getVenueNameAttribute(): string
+    {
+        return 'Teatro Quasar';
+    }
+
+    public function getCityNameAttribute(): string
+    {
+        return 'Medellín';
+    }
+
+    public function getFormattedDateAttribute(): string
+    {
+        return $this->fecha_evento?->translatedFormat('j \\d\\e F \\d\\e Y') ?? 'Por confirmar';
+    }
+
+    public function getFormattedTimeAttribute(): string
+    {
+        return $this->fecha_evento?->format('H:i') . 'h' ?? 'Por confirmar';
+    }
+
+    public function getFormattedPriceAttribute(): string
+    {
+        $price = $this->price_from_description;
+        return $price > 0 ? number_format($price, 0, ',', '.') : 'Por confirmar';
+    }
 }

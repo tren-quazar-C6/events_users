@@ -40,18 +40,18 @@
             </div>
             @endauth
 
-            <div class="flex flex-wrap gap-6 mb-8 text-on-surface-variant">
+            <div class="flex flex-col gap-4 mb-8 text-on-surface-variant">
                 <div class="flex items-center gap-2">
-                    <span class="material-symbols-outlined text-primary">schedule</span>
-                    <span class="font-body-md text-body-md">{{ $event['duration'] }}</span>
+                    <span class="material-symbols-outlined text-primary">calendar_today</span>
+                    <span class="font-body-md text-body-md">{{ $event['dates'][0]['dow'] ?? '' }} {{ $event['dates'][0]['day'] ?? '' }} de {{ $event['dates'][0]['month'] ?? '' }} · {{ $event['times'][0] ?? '' }}</span>
                 </div>
                 <div class="flex items-center gap-2">
                     <span class="material-symbols-outlined text-primary">location_on</span>
-                    <span class="font-body-md text-body-md">{{ $event['venue'] }}</span>
+                    <span class="font-body-md text-body-md">{{ $event['venue'] }}, {{ $event['city'] }}</span>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span class="material-symbols-outlined text-primary">theater_comedy</span>
-                    <span class="font-body-md text-body-md">{{ $event['author'] }}</span>
+                    <span class="material-symbols-outlined text-primary">local_offer</span>
+                    <span class="font-body-md text-body-md">Desde ${{ $event['price'] }}</span>
                 </div>
             </div>
 
