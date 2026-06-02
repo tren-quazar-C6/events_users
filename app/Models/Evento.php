@@ -34,9 +34,20 @@ class Evento extends Model
         return $this->belongsTo(TipoEvento::class, 'id_tipo_evento', 'id_tipo_evento');
     }
 
-    public function imagenes(): HasMany
+    // Imágenes están en la columna ruta_url de la tabla EVENTOS, no en una tabla separada
+    // public function imagenes(): HasMany
+    // {
+    //     return $this->hasMany(Imagen::class, 'evento_id', 'id_evento');
+    // }
+
+    public function getImageUrlAttribute(): ?string
     {
-        return $this->hasMany(Imagen::class, 'evento_id', 'id_evento');
+        if ($this->ruta_url) {
+            return \Illuminate\Support\Str::startsWith($this->ruta_url, ['http://', 'https://', '/'])
+                ? $this->ruta_url
+                : \Illuminate\Support\Facades\Storage::url($this->ruta_url);
+        }
+        return null;
     }
 
     public function eventoAsientos(): HasMany

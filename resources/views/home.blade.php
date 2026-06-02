@@ -34,17 +34,7 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 @forelse ($events->take(3) as $event)
                     @php
-                        $image = $event->imagenes->firstWhere('principal', true)
-                            ?? $event->imagenes->firstWhere('activo', true)
-                            ?? $event->imagenes->first();
-                        $imageUrl = null;
-
-                        if ($image?->ruta_url) {
-                            $imageUrl = \Illuminate\Support\Str::startsWith($image->ruta_url, ['http://', 'https://', '/'])
-                                ? $image->ruta_url
-                                : \Illuminate\Support\Facades\Storage::url($image->ruta_url);
-                        }
-                        $imageUrl = $imageUrl ?: '/icons/icon-512.png';
+                        $imageUrl = $event->image_url ?? '/icons/icon-512.png';
                     @endphp
                     <div class="bg-white rounded-card shadow-soft overflow-hidden">
                         <div class="aspect-[4/3] bg-sage-light bg-cover bg-center"
