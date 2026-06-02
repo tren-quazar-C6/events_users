@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class TipoEvento extends Model
 {
+    protected $table = 'TIPO_EVENTO';
     protected $primaryKey = 'id_tipo_evento';
     public $timestamps = false;
 

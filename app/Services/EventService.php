@@ -60,10 +60,7 @@ class EventService
     private function fetchEvents(): array
     {
         if (Schema::hasTable('EVENTOS')) {
-            $dbEvents = $this->fetchFromDB();
-            if (count($dbEvents) > 0) {
-                return $dbEvents;
-            }
+            return $this->fetchFromDB();
         }
 
         $baseUrl = config('services.events_api.url');
