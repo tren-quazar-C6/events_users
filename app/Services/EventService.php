@@ -92,15 +92,11 @@ class EventService
     private function fetchFromDB(): array
     {
         try {
-            return Evento::with('tipo', 'imagenes')
+            return Evento::with('tipo')
                 ->where('activo', true)
                 ->where('publicado', true)
                 ->get()
                 ->map(function (Evento $evento): array {
-                    $imagen = $evento->imagenes->firstWhere('principal', true)
-                        ?? $evento->imagenes->firstWhere('activo', true)
-                        ?? $evento->imagenes->first();
-
                     return [
                         'id'              => $evento->getKey(),
                         'slug'            => $evento->slug,
@@ -108,7 +104,7 @@ class EventService
                         'category'        => $evento->tipo?->nombre_tipo ?? 'General',
                         'synopsis'        => $evento->synopsis ?? [],
                         'poster_color'    => $evento->poster_color ?? '#7BB394',
-                        'image_url'       => $imagen?->ruta_url ?? null,
+                        'image_url'       => $evento->ruta_url,
                         'price_from'      => (int) $evento->price_from,
                         'showtimes'       => $evento->fecha_evento
                             ? [['date' => $evento->fecha_evento->format('Y-m-d'), 'time' => $evento->fecha_evento->format('H:i')]]

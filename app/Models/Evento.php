@@ -16,7 +16,7 @@ class Evento extends Model
         'id_tipo_evento', 'slug', 'nombre_evento', 'synopsis',
         'author', 'duration', 'poster_color', 'venue', 'city', 'price_from',
         'fecha_evento', 'fecha_inicio_ventas', 'fecha_fin_ventas',
-        'capacidad_total', 'publicado', 'activo',
+        'capacidad_total', 'publicado', 'activo', 'ruta_url',
     ];
 
     protected $casts = [
