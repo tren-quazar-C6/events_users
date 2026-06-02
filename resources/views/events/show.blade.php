@@ -72,8 +72,12 @@
         </div>
 
         {{-- Columna imagen --}}
-        <div class="w-full md:w-1/2 relative min-h-[400px] bg-secondary-container flex items-center justify-center">
-            <span class="material-symbols-outlined text-primary/20" style="font-size: 140px">curtains</span>
+        <div class="w-full md:w-1/2 relative min-h-[400px] bg-secondary-container flex items-center justify-center overflow-hidden">
+            @if ($event['image_url'])
+                <img src="{{ $event['image_url'] }}" alt="{{ $event['title'] }}" class="w-full h-full object-cover">
+            @else
+                <span class="material-symbols-outlined text-primary/20" style="font-size: 140px">curtains</span>
+            @endif
             <div class="absolute inset-0 bg-gradient-to-r from-surface-container-low via-transparent to-transparent hidden md:block"></div>
         </div>
 
@@ -116,22 +120,38 @@
 
                 {{-- Foto grande --}}
                 <div class="col-span-2 row-span-2 overflow-hidden rounded-xl bg-surface-container shadow-sm border border-secondary-container/20 min-h-[200px] flex items-center justify-center group">
-                    <span class="material-symbols-outlined text-outline/30 group-hover:scale-110 transition-transform duration-500" style="font-size: 64px">photo_camera</span>
+                    @if ($event['image_url'])
+                        <img src="{{ $event['image_url'] }}" alt="{{ $event['title'] }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                    @else
+                        <span class="material-symbols-outlined text-outline/30 group-hover:scale-110 transition-transform duration-500" style="font-size: 64px">photo_camera</span>
+                    @endif
                 </div>
 
                 {{-- Foto ancha --}}
                 <div class="col-span-2 overflow-hidden rounded-xl bg-surface-container-high shadow-sm border border-secondary-container/20 min-h-[96px] flex items-center justify-center group">
-                    <span class="material-symbols-outlined text-outline/30 group-hover:scale-110 transition-transform duration-500" style="font-size: 48px">theater_comedy</span>
+                    @if ($event['image_url'])
+                        <img src="{{ $event['image_url'] }}" alt="{{ $event['title'] }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                    @else
+                        <span class="material-symbols-outlined text-outline/30 group-hover:scale-110 transition-transform duration-500" style="font-size: 48px">theater_comedy</span>
+                    @endif
                 </div>
 
                 {{-- Foto pequeña 1 --}}
                 <div class="overflow-hidden rounded-xl bg-secondary-container/40 shadow-sm border border-secondary-container/20 min-h-[96px] flex items-center justify-center group">
-                    <span class="material-symbols-outlined text-outline/30 group-hover:scale-110 transition-transform duration-500" style="font-size: 40px">spotlight</span>
+                    @if ($event['image_url'])
+                        <img src="{{ $event['image_url'] }}" alt="{{ $event['title'] }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                    @else
+                        <span class="material-symbols-outlined text-outline/30 group-hover:scale-110 transition-transform duration-500" style="font-size: 40px">spotlight</span>
+                    @endif
                 </div>
 
                 {{-- Foto pequeña 2 --}}
                 <div class="overflow-hidden rounded-xl bg-surface-container shadow-sm border border-secondary-container/20 min-h-[96px] flex items-center justify-center group">
-                    <span class="material-symbols-outlined text-outline/30 group-hover:scale-110 transition-transform duration-500" style="font-size: 40px">stage</span>
+                    @if ($event['image_url'])
+                        <img src="{{ $event['image_url'] }}" alt="{{ $event['title'] }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                    @else
+                        <span class="material-symbols-outlined text-outline/30 group-hover:scale-110 transition-transform duration-500" style="font-size: 40px">stage</span>
+                    @endif
                 </div>
 
             </div>
