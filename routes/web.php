@@ -116,27 +116,37 @@ Route::middleware('auth')->group(function () {
 
     // ─── Dashboard sub-páginas ───────────────────────────────────────────
     Route::get('/dashboard/tickets', function () {
+<<<<<<< HEAD
         $user = Auth::user();
         $hasSalesTables = Schema::hasTable('ventas') && Schema::hasTable('tickets') && Schema::hasTable('estado_tickets');
         $cachedTickets = app(PurchaseFlowService::class)->ticketsForUser($user->id);
+=======
+>>>>>>> 1915c43 (feat: wire VPS tables to models — tickets from events_tickets now mirror in dashboard)
         $user           = Auth::user();
         $hasSalesTables = Schema::hasTable('VENTAS')
             && Schema::hasTable('TICKETS')
             && Schema::hasTable('ESTADO_TICKET');
+<<<<<<< HEAD
+
+        if (! $hasSalesTables) {
+            $tickets = app(PurchaseFlowService::class)->ticketsForUser($user->id);
+=======
+>>>>>>> 1915c43 (feat: wire VPS tables to models — tickets from events_tickets now mirror in dashboard)
 
         if (! $hasSalesTables) {
             $tickets = app(PurchaseFlowService::class)->ticketsForUser($user->id);
 
-        $upcoming = collect();
-        $past = collect();
-
+<<<<<<< HEAD
         if ($hasSalesTables) {
             $estadoConfirmado = EstadoTicket::where('nombre_estado', 'CONFIRMADO')->value('id');
             $estadoUsado      = EstadoTicket::where('nombre_estado', 'USADO')->value('id');
+=======
+>>>>>>> 1915c43 (feat: wire VPS tables to models — tickets from events_tickets now mirror in dashboard)
             return view('dashboard.tickets', [
                 'upcoming' => $tickets->filter(fn ($t) => $t->eventoAsiento?->evento?->fecha_evento?->isFuture())->values(),
                 'past'     => $tickets->filter(fn ($t) => $t->eventoAsiento?->evento?->fecha_evento?->isPast())->values(),
             ]);
+<<<<<<< HEAD
         }
 
         // Encontrar el id_usuario correspondiente en la tabla USUARIO del VPS
@@ -166,17 +176,33 @@ Route::middleware('auth')->group(function () {
                 ->with(['venta', 'eventoAsiento.asiento.zona', 'eventoAsiento.evento'])
                 ->latest()
                 ->get();
+=======
+>>>>>>> 1915c43 (feat: wire VPS tables to models — tickets from events_tickets now mirror in dashboard)
         }
 
-        $upcoming = $upcoming
-            ->concat($cachedTickets->filter(fn ($ticket) => $ticket->eventoAsiento?->evento?->fecha_evento?->isFuture()))
-            ->unique('codigo_unico')
-            ->values();
+        // Encontrar el id_usuario correspondiente en la tabla USUARIO del VPS
+        $usuarioId = DB::table('USUARIO')->where('email', $user->email)->value('id_usuario');
 
+<<<<<<< HEAD
         $past = $past
             ->concat($cachedTickets->filter(fn ($ticket) => $ticket->eventoAsiento?->evento?->fecha_evento?->isPast()))
             ->unique('codigo_unico')
             ->values();
+=======
+        if (! $usuarioId) {
+            return view('dashboard.tickets', ['upcoming' => collect(), 'past' => collect()]);
+        }
+
+        $ventaIds = DB::table('VENTAS')->where('id_usuario', $usuarioId)->pluck('id_venta');
+
+        // Estado 2 = PAGADO (activo), Estado 3 = USADO (pasado)
+        $upcoming = Ticket::whereIn('id_venta', $ventaIds)
+            ->where('id_estado_ticket', 2)
+            ->with(['eventoAsiento.evento', 'eventoAsiento.asiento', 'estadoTicket'])
+            ->orderByDesc('fecha_generacion')
+            ->get();
+
+>>>>>>> 1915c43 (feat: wire VPS tables to models — tickets from events_tickets now mirror in dashboard)
         $past = Ticket::whereIn('id_venta', $ventaIds)
             ->where('id_estado_ticket', 3)
             ->with(['eventoAsiento.evento', 'eventoAsiento.asiento', 'estadoTicket'])
