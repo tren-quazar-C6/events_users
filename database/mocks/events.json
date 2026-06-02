@@ -6,6 +6,7 @@
         "category": "Musical",
         "author": "Elton John & Tim Rice",
         "duration": "2h 45min",
+        "image_url": "https://images.unsplash.com/photo-1552664730-d307ca884978?fit=crop&w=1200&h=800&q=80",
         "synopsis": [
             "El épico musical de Disney llega a Medellín con su impresionante puesta en escena, máscaras icónicas y una banda sonora que ha conquistado al mundo.",
             "Con coreografías espectaculares y diseño de vestuario de Julie Taymor, esta producción es un viaje sensorial a las praderas africanas que no olvidarás."
@@ -36,6 +37,7 @@
         "category": "Drama",
         "author": "William Shakespeare",
         "duration": "2h 30min",
+        "image_url": "https://images.unsplash.com/photo-1507676184212-d0cf64c6b3e5?fit=crop&w=1200&h=800&q=80",
         "synopsis": [
             "La obra cumbre de Shakespeare en una versión íntima y contemporánea. Una exploración del duelo, la venganza y la duda existencial.",
             "Un príncipe atrapado entre el deber y la parálisis, en una corte donde nadie es inocente y la verdad tiene un precio."
@@ -62,6 +64,7 @@
         "category": "Infantil",
         "author": "DreamWorks Animation",
         "duration": "1h 30min",
+        "image_url": "https://images.unsplash.com/photo-1544716305-27825-0c1c88c0b5d0?fit=crop&w=1200&h=800&q=80",
         "synopsis": [
             "Alex, Marty, Gloria y Melman llegan en vivo para una aventura llena de música, baile y diversión para toda la familia.",
             "Un espectáculo lleno de color, humor y canciones que harán bailar a grandes y pequeños desde el primer minuto."
@@ -92,6 +95,7 @@
         "category": "Comedia",
         "author": "Varios artistas",
         "duration": "1h 45min",
+        "image_url": "https://images.unsplash.com/photo-1527224538127-21ea696e2e12?fit=crop&w=1200&h=800&q=80",
         "synopsis": [
             "Los mejores comediantes paisas en una noche de risas garantizadas. No apta para amargados.",
             "Cada función es un universo distinto: humor ácido, observacional y absurdo en perfecta combinación."
@@ -114,6 +118,7 @@
         "category": "Drama",
         "author": "Federico García Lorca",
         "duration": "2h 00min",
+        "image_url": "https://images.unsplash.com/photo-1518998053901-53d6fbf04261?fit=crop&w=1200&h=800&q=80",
         "synopsis": [
             "Lorca en su máxima expresión. Una madre, cinco hijas, una casa convertida en cárcel. Pasiones que arden bajo el luto.",
             "Una de las piezas más poderosas del teatro universal, donde el silencio y la represión estallan en una tragedia inevitable."
@@ -140,6 +145,7 @@
         "category": "Musical",
         "author": "John Kander & Fred Ebb",
         "duration": "2h 15min",
+        "image_url": "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?fit=crop&w=1200&h=800&q=80",
         "synopsis": [
             "Jazz, asesinato y celebridad. El musical de Broadway sobre la fama y el escándalo de los años veinte.",
             "Velma Kelly y Roxie Hart compiten por los titulares en el Chicago de la Ley Seca, donde todo es espectáculo y nada es lo que parece."
@@ -166,6 +172,7 @@
         "category": "Infantil",
         "author": "L. Frank Baum",
         "duration": "1h 40min",
+        "image_url": "https://images.unsplash.com/photo-1511192336575-5a41e0c9ef14?fit=crop&w=1200&h=800&q=80",
         "synopsis": [
             "Dorothy y sus amigos en una nueva aventura por el camino amarillo. Música, color y mensaje de amistad para los más chicos.",
             "Un viaje mágico que demuestra que el hogar y el coraje siempre están más cerca de lo que creemos."
@@ -192,6 +199,7 @@
         "category": "Comedia",
         "author": "Colectivo Impro Medellín",
         "duration": "1h 30min",
+        "image_url": "https://images.unsplash.com/photo-1543589077-47d81ca2f47f?fit=crop&w=1200&h=800&q=80",
         "synopsis": [
             "Show de improvisación 100% en vivo. El público propone, los actores ejecutan. Cada función es única e irrepetible.",
             "Sin guión, sin ensayo, solo talento puro y la energía del público como combustible. La comedia en su estado más honesto."
