@@ -39,7 +39,40 @@ Route::get('/', function () {
 Route::get('/catalog', fn () => view('catalog'))->name('catalog');
 
 Route::get('/events/{slug}', function ($slug) {
-    // Primero buscar en la BD local
+    // Primero intentar desde la API
+    $apiEvent = app(EventService::class)->findBySlug($slug);
+
+    if ($apiEvent) {
+        $showtime = $apiEvent['showtimes'][0] ?? ['date' => now()->toDateString(), 'time' => '00:00'];
+        $date = Carbon::parse($showtime['date'].' '.$showtime['time']);
+
+        $event = [
+            'id'           => $apiEvent['id'],
+            'slug'         => $apiEvent['slug'],
+            'title'        => $apiEvent['title'],
+            'category'     => $apiEvent['category'],
+            'author'       => 'Tickify',
+            'duration'     => 'Por confirmar',
+            'synopsis'     => filled($apiEvent['synopsis']) ? [$apiEvent['synopsis']] : ['Información del evento por confirmar.'],
+            'poster_color' => $apiEvent['poster_color'],
+            'image_url'    => $apiEvent['image_url'],
+            'price_from'   => $apiEvent['price_from'],
+            'venue'        => $apiEvent['venue'] ?? 'Teatro Quasar',
+            'city'         => $apiEvent['city'] ?? 'Medellín',
+            'dates'        => [[
+                'dow'   => $date->locale('es')->isoFormat('ddd'),
+                'day'   => $date->day,
+                'month' => $date->locale('es')->isoFormat('MMM'),
+            ]],
+            'times'        => [$date->format('H:i')],
+            'price'        => $apiEvent['price_from'] > 0 ? number_format($apiEvent['price_from'], 0, ',', '.') : 'Por confirmar',
+            'showtimes'    => $apiEvent['showtimes'],
+        ];
+
+        return view('events.show', compact('event'));
+    }
+
+    // Fallback a BD local
     $eventos = Evento::with('tipo')->where('activo', true)->get();
     $evento = $eventos->first(fn ($e) => \Illuminate\Support\Str::slug($e->nombre_evento) === $slug);
 
@@ -70,39 +103,6 @@ Route::get('/events/{slug}', function ($slug) {
                 'date' => Carbon::parse($evento->fecha_evento)->format('Y-m-d'),
                 'time' => Carbon::parse($evento->fecha_evento)->format('H:i'),
             ]],
-        ];
-
-        return view('events.show', compact('event'));
-    }
-
-    // Fallback a EventService
-    $apiEvent = app(EventService::class)->findBySlug($slug);
-
-    if ($apiEvent) {
-        $showtime = $apiEvent['showtimes'][0] ?? ['date' => now()->toDateString(), 'time' => '00:00'];
-        $date = Carbon::parse($showtime['date'].' '.$showtime['time']);
-
-        $event = [
-            'id'           => $apiEvent['id'],
-            'slug'         => $apiEvent['slug'],
-            'title'        => $apiEvent['title'],
-            'category'     => $apiEvent['category'],
-            'author'       => 'Tickify',
-            'duration'     => 'Por confirmar',
-            'synopsis'     => filled($apiEvent['synopsis']) ? [$apiEvent['synopsis']] : ['Información del evento por confirmar.'],
-            'poster_color' => $apiEvent['poster_color'],
-            'image_url'    => $apiEvent['image_url'],
-            'price_from'   => $apiEvent['price_from'],
-            'venue'        => 'Por confirmar',
-            'city'         => '',
-            'dates'        => [[
-                'dow'   => $date->locale('es')->isoFormat('ddd'),
-                'day'   => $date->day,
-                'month' => $date->locale('es')->isoFormat('MMM'),
-            ]],
-            'times'        => [$date->format('H:i')],
-            'price'        => $apiEvent['price_from'] > 0 ? number_format($apiEvent['price_from'], 0, ',', '.') : 'Por confirmar',
-            'showtimes'    => $apiEvent['showtimes'],
         ];
 
         return view('events.show', compact('event'));
