@@ -4,7 +4,6 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\TicketController;
-use App\Models\EstadoTicket;
 use App\Models\Evento;
 use App\Models\EventoAsiento;
 use App\Models\Ticket;
@@ -13,6 +12,7 @@ use App\Services\EventService;
 use App\Services\PurchaseFlowService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
@@ -117,69 +117,41 @@ Route::middleware('auth')->group(function () {
     // ─── Dashboard sub-páginas ───────────────────────────────────────────
     Route::get('/dashboard/tickets', function () {
         $user = Auth::user();
-        $hasSalesTables = Schema::hasTable('ventas') && Schema::hasTable('tickets') && Schema::hasTable('estado_tickets');
+        $hasSalesTables = Schema::hasTable('VENTAS') && Schema::hasTable('TICKETS');
         $cachedTickets = app(PurchaseFlowService::class)->ticketsForUser($user->id);
-        $user           = Auth::user();
-        $hasSalesTables = Schema::hasTable('VENTAS')
-            && Schema::hasTable('TICKETS')
-            && Schema::hasTable('ESTADO_TICKET');
 
-        if (! $hasSalesTables) {
-            $tickets = app(PurchaseFlowService::class)->ticketsForUser($user->id);
-
-        if (! $hasSalesTables) {
-            $tickets = app(PurchaseFlowService::class)->ticketsForUser($user->id);
+        $upcoming = collect();
+        $past = collect();
 
         if ($hasSalesTables) {
-            $estadoConfirmado = EstadoTicket::where('nombre_estado', 'CONFIRMADO')->value('id');
-            $estadoUsado      = EstadoTicket::where('nombre_estado', 'USADO')->value('id');
-            return view('dashboard.tickets', [
-                'upcoming' => $tickets->filter(fn ($t) => $t->eventoAsiento?->evento?->fecha_evento?->isFuture())->values(),
-                'past'     => $tickets->filter(fn ($t) => $t->eventoAsiento?->evento?->fecha_evento?->isPast())->values(),
-            ]);
+            $usuarioId = DB::table('USUARIO')->where('email', $user->email)->value('id_usuario');
+
+            if ($usuarioId) {
+                $ventaIds = Venta::where('id_usuario', $usuarioId)->pluck('id_venta');
+
+                $upcoming = Ticket::whereIn('id_venta', $ventaIds)
+                    ->where('id_estado_ticket', 2)
+                    ->with(['estadoTicket', 'eventoAsiento.asiento.zona', 'eventoAsiento.evento'])
+                    ->latest('fecha_generacion')
+                    ->get();
+
+                $past = Ticket::whereIn('id_venta', $ventaIds)
+                    ->where('id_estado_ticket', 3)
+                    ->with(['estadoTicket', 'eventoAsiento.asiento.zona', 'eventoAsiento.evento'])
+                    ->latest('fecha_generacion')
+                    ->get();
+            }
         }
 
-        // Encontrar el id_usuario correspondiente en la tabla USUARIO del VPS
-        $usuarioId = DB::table('USUARIO')->where('email', $user->email)->value('id_usuario');
-
-        if (! $usuarioId) {
-            return view('dashboard.tickets', ['upcoming' => collect(), 'past' => collect()]);
-        }
-
-            $ventaIds = Venta::where('user_id', $user->id)->pluck('id');
-        $ventaIds = DB::table('VENTAS')->where('id_usuario', $usuarioId)->pluck('id_venta');
-
-            $upcoming = Ticket::whereIn('venta_id', $ventaIds)
-                ->where('estado_ticket_id', $estadoConfirmado)
-                ->with(['venta', 'eventoAsiento.asiento.zona', 'eventoAsiento.evento'])
-                ->latest()
-                ->get();
-        // Estado 2 = PAGADO (activo), Estado 3 = USADO (pasado)
-        $upcoming = Ticket::whereIn('id_venta', $ventaIds)
-            ->where('id_estado_ticket', 2)
-            ->with(['eventoAsiento.evento', 'eventoAsiento.asiento', 'estadoTicket'])
-            ->orderByDesc('fecha_generacion')
-            ->get();
-
-            $past = Ticket::whereIn('venta_id', $ventaIds)
-                ->where('estado_ticket_id', $estadoUsado)
-                ->with(['venta', 'eventoAsiento.asiento.zona', 'eventoAsiento.evento'])
-                ->latest()
-                ->get();
-        }
-
-        // Encontrar el id_usuario correspondiente en la tabla USUARIO del VPS
-        $usuarioId = DB::table('USUARIO')->where('email', $user->email)->value('id_usuario');
+        $upcoming = $upcoming
+            ->concat($cachedTickets->filter(fn ($ticket) => $ticket->eventoAsiento?->evento?->fecha_evento?->isFuture()))
+            ->unique('codigo_unico')
+            ->values();
 
         $past = $past
             ->concat($cachedTickets->filter(fn ($ticket) => $ticket->eventoAsiento?->evento?->fecha_evento?->isPast()))
             ->unique('codigo_unico')
             ->values();
-        $past = Ticket::whereIn('id_venta', $ventaIds)
-            ->where('id_estado_ticket', 3)
-            ->with(['eventoAsiento.evento', 'eventoAsiento.asiento', 'estadoTicket'])
-            ->orderByDesc('fecha_generacion')
-            ->get();
 
         return view('dashboard.tickets', compact('upcoming', 'past'));
     })->name('dashboard.tickets');
@@ -234,13 +206,13 @@ Route::middleware('auth')->group(function () {
 
         $evento = Evento::where('slug', $slug)->where('activo', true)->firstOrFail();
 
-        $eventoAsientos = EventoAsiento::where('evento_id', $evento->id)
+        $eventoAsientos = EventoAsiento::where('id_evento', $evento->id_evento)
             ->with(['asiento.zona'])
             ->get();
 
         // Liberar reservas expiradas antes de mostrar el mapa
         $eventoAsientos->each(fn ($ea) => $ea->isDisponible());
-        $eventoAsientos = EventoAsiento::where('evento_id', $evento->id)
+        $eventoAsientos = EventoAsiento::where('id_evento', $evento->id_evento)
             ->with(['asiento.zona'])
             ->get();
 
@@ -251,7 +223,7 @@ Route::middleware('auth')->group(function () {
                 'label'   => $fila,
                 'section' => $seats->first()->asiento->zona->nombre_zona,
                 'seats'   => $seats->sortBy('asiento.numero')->map(fn ($ea) => [
-                    'id'      => $ea->id,
+                    'id'      => $ea->id_evento_asiento,
                     'n'       => $ea->asiento->numero,
                     's'       => match ($ea->estado) {
                         'DISPONIBLE' => 'a',
@@ -265,7 +237,7 @@ Route::middleware('auth')->group(function () {
             ])->values()->all();
 
         $event = [
-            'id'        => $evento->id,
+            'id'        => $evento->id_evento,
             'slug'      => $evento->slug,
             'title'     => $evento->nombre_evento,
             'venue'     => $evento->venue,

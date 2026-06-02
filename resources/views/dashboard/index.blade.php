@@ -4,32 +4,35 @@
 
 @section('dashboard-content')
 @php
-    use App\Models\EstadoTicket;
     use App\Models\Ticket;
     use App\Models\Venta;
     use App\Services\FavoriteService;
     use App\Services\PurchaseFlowService;
+    use Illuminate\Support\Facades\DB;
     use Illuminate\Support\Facades\Schema;
 
     $user = auth()->user();
-    $hasSalesTables = Schema::hasTable('ventas') && Schema::hasTable('tickets') && Schema::hasTable('estado_tickets');
+    $hasSalesTables = Schema::hasTable('VENTAS') && Schema::hasTable('TICKETS');
     $upcomingTickets = collect();
     $dbTickets = collect();
     $cachedTickets = app(PurchaseFlowService::class)->ticketsForUser($user->id);
 
     if ($hasSalesTables) {
-        $ventaIds = Venta::where('user_id', $user->id)->pluck('id');
-        $confirmadoId = EstadoTicket::where('nombre_estado', 'CONFIRMADO')->value('id');
+        $usuarioId = DB::table('USUARIO')->where('email', $user->email)->value('id_usuario');
 
-        $upcomingTickets = Ticket::whereIn('venta_id', $ventaIds)
-            ->where('estado_ticket_id', $confirmadoId)
-            ->with(['eventoAsiento.evento', 'eventoAsiento.asiento'])
-            ->get()
-            ->filter(fn ($t) => $t->eventoAsiento?->evento?->fecha_evento?->isFuture());
+        if ($usuarioId) {
+            $ventaIds = Venta::where('id_usuario', $usuarioId)->pluck('id_venta');
 
-        $dbTickets = Ticket::whereIn('venta_id', $ventaIds)
-            ->with(['eventoAsiento.evento', 'eventoAsiento.asiento'])
-            ->get();
+            $upcomingTickets = Ticket::whereIn('id_venta', $ventaIds)
+                ->where('id_estado_ticket', 2)
+                ->with(['eventoAsiento.evento', 'eventoAsiento.asiento'])
+                ->get()
+                ->filter(fn ($t) => $t->eventoAsiento?->evento?->fecha_evento?->isFuture());
+
+            $dbTickets = Ticket::whereIn('id_venta', $ventaIds)
+                ->with(['eventoAsiento.evento', 'eventoAsiento.asiento'])
+                ->get();
+        }
     }
 
     $upcomingTickets = $upcomingTickets

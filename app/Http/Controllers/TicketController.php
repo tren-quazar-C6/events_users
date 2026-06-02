@@ -11,6 +11,7 @@ use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class TicketController extends Controller
@@ -20,11 +21,15 @@ class TicketController extends Controller
         $ticket = null;
 
         if ($this->hasSalesTables()) {
-            $ventaIds = Venta::where('user_id', Auth::id())->pluck('id');
+            $usuarioId = DB::table('USUARIO')->where('email', Auth::user()->email)->value('id_usuario');
 
-            $ticket = Ticket::whereIn('venta_id', $ventaIds)
-                ->where('codigo_unico', $code)
-                ->first();
+            if ($usuarioId) {
+                $ventaIds = Venta::where('id_usuario', $usuarioId)->pluck('id_venta');
+
+                $ticket = Ticket::whereIn('id_venta', $ventaIds)
+                    ->where('codigo_unico', $code)
+                    ->first();
+            }
         }
 
         if (! $ticket) {
@@ -45,6 +50,6 @@ class TicketController extends Controller
 
     private function hasSalesTables(): bool
     {
-        return Schema::hasTable('ventas') && Schema::hasTable('tickets');
+        return Schema::hasTable('VENTAS') && Schema::hasTable('TICKETS');
     }
 }
