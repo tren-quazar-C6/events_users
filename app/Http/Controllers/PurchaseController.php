@@ -94,6 +94,7 @@ class PurchaseController extends Controller
 
         session(["checkout:{$token}" => [
             'id_evento'          => $evento->id_evento,
+            'slug'               => $slug,
             'evento_asiento_ids' => $result['asientos']->pluck('id_evento_asiento')->all(),
             'precios'            => $result['precios']->toArray(),
             'expira'             => now()->addMinutes(15)->toIso8601String(),
@@ -121,6 +122,11 @@ class PurchaseController extends Controller
         abort_if(! $data, 404, 'Sesión de checkout inválida o expirada.');
 
         $evento         = Evento::findOrFail($data['id_evento']);
+        // Asegurar que evento tenga slug (de sesión si no lo tiene en BD)
+        if (! $evento->slug) {
+            $evento->slug = $data['slug'] ?? null;
+        }
+
         $eventoAsientos = EventoAsiento::with(['asiento'])
             ->whereIn('id_evento_asiento', $data['evento_asiento_ids'])
             ->get();
