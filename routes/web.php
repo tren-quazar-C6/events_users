@@ -97,33 +97,40 @@ Route::middleware('auth')->group(function () {
 
     // ─── Dashboard sub-páginas ───────────────────────────────────────────
     Route::get('/dashboard/tickets', function () {
-        $user = Auth::user();
-        $hasSalesTables = Schema::hasTable('ventas') && Schema::hasTable('tickets') && Schema::hasTable('estado_tickets');
+        $user           = Auth::user();
+        $hasSalesTables = Schema::hasTable('VENTAS')
+            && Schema::hasTable('TICKETS')
+            && Schema::hasTable('ESTADO_TICKET');
 
         if (! $hasSalesTables) {
             $tickets = app(PurchaseFlowService::class)->ticketsForUser($user->id);
 
             return view('dashboard.tickets', [
-                'upcoming' => $tickets->filter(fn ($ticket) => $ticket->eventoAsiento?->evento?->fecha_evento?->isFuture())->values(),
-                'past' => $tickets->filter(fn ($ticket) => $ticket->eventoAsiento?->evento?->fecha_evento?->isPast())->values(),
+                'upcoming' => $tickets->filter(fn ($t) => $t->eventoAsiento?->evento?->fecha_evento?->isFuture())->values(),
+                'past'     => $tickets->filter(fn ($t) => $t->eventoAsiento?->evento?->fecha_evento?->isPast())->values(),
             ]);
         }
 
-        $estadoConfirmado = EstadoTicket::where('nombre_estado', 'CONFIRMADO')->value('id');
-        $estadoUsado      = EstadoTicket::where('nombre_estado', 'USADO')->value('id');
+        // Encontrar el id_usuario correspondiente en la tabla USUARIO del VPS
+        $usuarioId = DB::table('USUARIO')->where('email', $user->email)->value('id_usuario');
 
-        $ventaIds = Venta::where('user_id', $user->id)->pluck('id');
+        if (! $usuarioId) {
+            return view('dashboard.tickets', ['upcoming' => collect(), 'past' => collect()]);
+        }
 
-        $upcoming = Ticket::whereIn('venta_id', $ventaIds)
-            ->where('estado_ticket_id', $estadoConfirmado)
-            ->with(['venta', 'eventoAsiento.asiento.zona', 'eventoAsiento.evento'])
-            ->latest()
+        $ventaIds = DB::table('VENTAS')->where('id_usuario', $usuarioId)->pluck('id_venta');
+
+        // Estado 2 = PAGADO (activo), Estado 3 = USADO (pasado)
+        $upcoming = Ticket::whereIn('id_venta', $ventaIds)
+            ->where('id_estado_ticket', 2)
+            ->with(['eventoAsiento.evento', 'eventoAsiento.asiento', 'estadoTicket'])
+            ->orderByDesc('fecha_generacion')
             ->get();
 
-        $past = Ticket::whereIn('venta_id', $ventaIds)
-            ->where('estado_ticket_id', $estadoUsado)
-            ->with(['venta', 'eventoAsiento.asiento.zona', 'eventoAsiento.evento'])
-            ->latest()
+        $past = Ticket::whereIn('id_venta', $ventaIds)
+            ->where('id_estado_ticket', 3)
+            ->with(['eventoAsiento.evento', 'eventoAsiento.asiento', 'estadoTicket'])
+            ->orderByDesc('fecha_generacion')
             ->get();
 
         return view('dashboard.tickets', compact('upcoming', 'past'));

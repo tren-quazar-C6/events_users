@@ -8,39 +8,29 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class EventoAsiento extends Model
 {
-    protected $fillable = [
-        'evento_id', 'asiento_id', 'precio', 'estado',
-        'fecha_reserva', 'reserva_expira',
-    ];
+    protected $table = 'EVENTO_ASIENTO';
+    protected $primaryKey = 'id_evento_asiento';
+    public $timestamps = false;
 
-    protected $casts = [
-        'precio'          => 'decimal:2',
-        'fecha_reserva'   => 'datetime',
-        'reserva_expira'  => 'datetime',
-    ];
+    protected $fillable = ['id_asiento', 'id_evento', 'estado'];
 
     public function evento(): BelongsTo
     {
-        return $this->belongsTo(Evento::class, 'evento_id');
+        return $this->belongsTo(Evento::class, 'id_evento', 'id_evento');
     }
 
     public function asiento(): BelongsTo
     {
-        return $this->belongsTo(Asiento::class, 'asiento_id');
+        return $this->belongsTo(Asiento::class, 'id_asiento', 'id_asiento')->with('zona');
     }
 
     public function ticket(): HasOne
     {
-        return $this->hasOne(Ticket::class, 'evento_asiento_id');
+        return $this->hasOne(Ticket::class, 'id_evento_asiento', 'id_evento_asiento');
     }
 
     public function isDisponible(): bool
     {
-        if ($this->estado === 'RESERVADO' && $this->reserva_expira?->isPast()) {
-            $this->update(['estado' => 'DISPONIBLE', 'fecha_reserva' => null, 'reserva_expira' => null]);
-            return true;
-        }
-
         return $this->estado === 'DISPONIBLE';
     }
 }
