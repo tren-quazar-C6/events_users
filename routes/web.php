@@ -230,6 +230,16 @@ Route::middleware('auth')->group(function () {
             ->with(['asiento.zona'])
             ->get();
 
+        // Obtener precios desde EVENTO_ZONA via JOIN
+        $precioMap = DB::table('EVENTO_ASIENTO as ea')
+            ->join('ASIENTOS as a', 'a.id_asiento', '=', 'ea.id_asiento')
+            ->join('EVENTO_ZONA as ez', function ($j) use ($evento) {
+                $j->on('ez.id_evento', '=', 'ea.id_evento')
+                  ->on('ez.id_zona', '=', 'a.id_zona');
+            })
+            ->where('ea.id_evento', $evento->id_evento)
+            ->pluck('ez.precio', 'ea.id_evento_asiento');
+
         $seatRows = $eventoAsientos
             ->groupBy(fn ($ea) => $ea->asiento->fila)
             ->sortKeys()
@@ -245,7 +255,7 @@ Route::middleware('auth')->group(function () {
                         'BLOQUEADO' => 'b',
                         default     => 'a',
                     },
-                    'precio'  => (float) $ea->precio,
+                    'precio'  => (float) ($precioMap[$ea->id_evento_asiento] ?? 0),
                     'section' => $ea->asiento->zona->nombre_zona,
                 ])->values()->all(),
             ])->values()->all();

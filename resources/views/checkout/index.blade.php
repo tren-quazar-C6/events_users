@@ -37,7 +37,7 @@
                     </p>
                     <p class="flex items-center gap-2">
                         <span class="material-symbols-outlined" style="font-size:18px">local_offer</span>
-                        Desde ${{ $evento->formatted_price }}
+                        Desde ${{ $minPrice > 0 ? number_format($minPrice, 0, ',', '.') : 'Por confirmar' }}
                     </p>
                 </div>
             </div>

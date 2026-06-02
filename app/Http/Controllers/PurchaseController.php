@@ -114,8 +114,9 @@ class PurchaseController extends Controller
             $subtotal       = $eventoAsientos->sum('precio');
             $fee            = 3500;
             $total          = $subtotal + $fee;
+            $minPrice       = (int) $eventoAsientos->min('precio');
 
-            return view('checkout.index', compact('token', 'data', 'evento', 'eventoAsientos', 'subtotal', 'fee', 'total'));
+            return view('checkout.index', compact('token', 'data', 'evento', 'eventoAsientos', 'subtotal', 'fee', 'total', 'minPrice'));
         }
 
         $data = session("checkout:{$token}");
@@ -132,11 +133,18 @@ class PurchaseController extends Controller
             ->get();
 
         $precios  = $data['precios'] ?? [];
+
+        // Inyectar precio en cada modelo para la vista
+        foreach ($eventoAsientos as $ea) {
+            $ea->precio = (float) ($precios[$ea->id_evento_asiento] ?? 0);
+        }
+
         $subtotal = array_sum($precios);
         $fee      = 3500;
         $total    = $subtotal + $fee;
+        $minPrice = ! empty($precios) ? (int) min($precios) : 0;
 
-        return view('checkout.index', compact('token', 'data', 'evento', 'eventoAsientos', 'subtotal', 'fee', 'total'));
+        return view('checkout.index', compact('token', 'data', 'evento', 'eventoAsientos', 'subtotal', 'fee', 'total', 'minPrice'));
     }
 
     public function confirmCheckout(Request $request, string $token): RedirectResponse
