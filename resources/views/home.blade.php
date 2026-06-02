@@ -55,7 +55,12 @@
                             <p class="text-sage-dark/70 text-sm mt-2">
                                 {{ \Illuminate\Support\Str::limit(implode(' ', (array) ($event->synopsis ?? [])), 120) ?: 'Próximamente más información de esta obra.' }}
                             </p>
-                            <p class="text-sage-dark/60 text-xs mt-2">{{ $event->fecha_evento?->translatedFormat('l j \\d\\e F · H:i') }}</p>
+                            <div class="mt-3 flex items-center justify-between">
+                                <p class="text-sage-dark/60 text-xs">{{ $event->fecha_evento?->translatedFormat('l j \\d\\e F · H:i') }}</p>
+                                @if ($event->price_from > 0)
+                                    <span class="font-semibold text-sage">Desde ${{ number_format($event->price_from, 0, ',', '.') }}</span>
+                                @endif
+                            </div>
                             @if (filled($event->slug))
                                 <div class="mt-4 flex items-center gap-4">
                                     <a href="{{ route('events.show', $event->slug) }}" class="text-sage font-semibold hover:underline">Ver detalles →</a>
