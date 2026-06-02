@@ -71,7 +71,9 @@ Route::get('/events/{slug}', function ($slug) {
         return view('events.show', compact('event'));
     }
 
-    $evento = Evento::with('tipo')->where('nombre_evento', 'like', "%$slug%")->where('activo', true)->first();
+    // Buscar por slug generado desde nombre_evento
+    $eventos = Evento::with('tipo')->where('activo', true)->get();
+    $evento = $eventos->first(fn ($e) => \Illuminate\Support\Str::slug($e->nombre_evento) === $slug);
 
     if (!$evento) {
         abort(404, 'Evento no encontrado');
@@ -209,7 +211,13 @@ Route::middleware('auth')->group(function () {
             return view('events.seats', compact('event', 'seatRows'));
         }
 
-        $evento = Evento::where('slug', $slug)->where('activo', true)->firstOrFail();
+        // Buscar por slug generado desde nombre_evento
+        $eventos = Evento::where('activo', true)->get();
+        $evento = $eventos->first(fn ($e) => \Illuminate\Support\Str::slug($e->nombre_evento) === $slug);
+
+        if (!$evento) {
+            abort(404, 'Evento no encontrado');
+        }
 
         $eventoAsientos = EventoAsiento::where('id_evento', $evento->id_evento)
             ->with(['asiento.zona'])
