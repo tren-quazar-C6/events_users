@@ -52,7 +52,10 @@ class PurchaseController extends Controller
             return redirect()->route('checkout', $token);
         }
 
-        $evento = Evento::where('slug', $slug)->firstOrFail();
+        $eventData = app(EventService::class)->findBySlug($slug);
+        abort_if(! $eventData, 404);
+
+        $evento = Evento::find($eventData['id']) ?? Evento::firstOrFail();
 
         $result = DB::transaction(function () use ($ids, $evento) {
             $eas = EventoAsiento::where('id_evento', $evento->id_evento)
