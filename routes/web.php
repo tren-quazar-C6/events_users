@@ -186,41 +186,43 @@ Route::middleware('auth')->group(function () {
         if ($apiEvent) {
             $apiSeats = app(EventService::class)->seatsForEvent((int) $apiEvent['id']);
 
-            $seatRows = $apiSeats
-                ->groupBy('row')
-                ->sortKeys()
-                ->map(fn ($seats, $row) => [
-                    'label' => $row,
-                    'section' => $seats->first()['zone'],
-                    'seats' => $seats->sortBy('number')->map(fn ($seat) => [
-                        'id' => $seat['id'],
-                        'n' => $seat['number'],
-                        's' => match ($seat['status']) {
-                            'DISPONIBLE' => 'a',
-                            'RESERVADO', 'VENDIDO' => 'o',
-                            'BLOQUEADO' => 'b',
-                            default => 'a',
-                        },
-                        'precio' => $seat['price'],
-                        'section' => $seat['zone'],
-                    ])->values()->all(),
-                ])->values()->all();
+            if ($apiSeats->isNotEmpty()) {
+                $seatRows = $apiSeats
+                    ->groupBy('row')
+                    ->sortKeys()
+                    ->map(fn ($seats, $row) => [
+                        'label' => $row,
+                        'section' => $seats->first()['zone'],
+                        'seats' => $seats->sortBy('number')->map(fn ($seat) => [
+                            'id' => $seat['id'],
+                            'n' => $seat['number'],
+                            's' => match ($seat['status']) {
+                                'DISPONIBLE' => 'a',
+                                'RESERVADO', 'VENDIDO' => 'o',
+                                'BLOQUEADO' => 'b',
+                                default => 'a',
+                            },
+                            'precio' => $seat['price'],
+                            'section' => $seat['zone'],
+                        ])->values()->all(),
+                    ])->values()->all();
 
-            $showtime = $apiEvent['showtimes'][0] ?? ['date' => now()->toDateString(), 'time' => '00:00'];
-            $event = [
-                'id' => $apiEvent['id'],
-                'slug' => $apiEvent['slug'],
-                'title' => $apiEvent['title'],
-                'venue' => 'Por confirmar',
-                'city' => '',
-                'price_from' => $apiEvent['price_from'],
-                'showtimes' => [$showtime],
-            ];
+                $showtime = $apiEvent['showtimes'][0] ?? ['date' => now()->toDateString(), 'time' => '00:00'];
+                $event = [
+                    'id' => $apiEvent['id'],
+                    'slug' => $apiEvent['slug'],
+                    'title' => $apiEvent['title'],
+                    'venue' => 'Por confirmar',
+                    'city' => '',
+                    'price_from' => $apiEvent['price_from'],
+                    'showtimes' => [$showtime],
+                ];
 
-            return view('events.seats', compact('event', 'seatRows'));
+                return view('events.seats', compact('event', 'seatRows'));
+            }
         }
 
-        // Buscar por slug generado desde nombre_evento
+        // Fallback a BD local: buscar por slug generado desde nombre_evento
         $eventos = Evento::where('activo', true)->get();
         $evento = $eventos->first(fn ($e) => \Illuminate\Support\Str::slug($e->nombre_evento) === $slug);
 
@@ -268,13 +270,18 @@ Route::middleware('auth')->group(function () {
                 ])->values()->all(),
             ])->values()->all();
 
+        $minPrecios = DB::table('EVENTO_ZONA')
+            ->where('id_evento', $evento->id_evento)
+            ->select(DB::raw('MIN(precio) as min_precio'))
+            ->value('min_precio');
+
         $event = [
             'id'        => $evento->id_evento,
-            'slug'      => $evento->slug,
+            'slug'      => \Illuminate\Support\Str::slug($evento->nombre_evento),
             'title'     => $evento->nombre_evento,
-            'venue'     => $evento->venue,
-            'city'      => $evento->city,
-            'price_from'=> $evento->price_from,
+            'venue'     => $evento->venue_name,
+            'city'      => $evento->city_name,
+            'price_from'=> (int) ($minPrecios ?? 0),
             'showtimes' => [[
                 'date' => Carbon::parse($evento->fecha_evento)->format('Y-m-d'),
                 'time' => Carbon::parse($evento->fecha_evento)->format('H:i'),
