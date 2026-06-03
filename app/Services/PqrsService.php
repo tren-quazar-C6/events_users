@@ -3,49 +3,40 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Models\Pqrs;
+use App\Models\PqrsMensaje;
 use App\Jobs\SendEmailViaN8n;
 use App\Mail\PqrsSubmitted;
-use Illuminate\Http\Client\RequestException;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use RuntimeException;
 
 class PqrsService
 {
-    public function submit(User $user, array $data): array
+    public function submit(User $user, array $data): Pqrs
     {
-        $response = Http::baseUrl(config('services.events_api.url'))
-            ->timeout(config('services.events_api.timeout', 5))
-            ->acceptJson()
-            ->asJson()
-            ->post('/api/pqrs', [
-                'id_usuario' => $user->id,
-                'tipo' => $data['tipo'],
-                'asunto' => $data['asunto'],
-                'mensaje' => $data['mensaje'],
-            ]);
+        $idUsuario = $this->resolveIdUsuario($user);
 
-        try {
-            $response->throw();
-        } catch (RequestException $exception) {
-            throw new RuntimeException('No fue posible registrar la PQRS en el servicio externo.', 0, $exception);
-        }
+        $pqrs = Pqrs::create([
+            'id_usuario' => $idUsuario,
+            'tipo' => $data['tipo'],
+            'asunto' => $data['asunto'],
+            'estado' => 'ABIERTO',
+        ]);
 
-        $payload = $response->json();
+        PqrsMensaje::create([
+            'id_pqrs' => $pqrs->id_pqrs,
+            'remitente' => 'USUARIO',
+            'id_remitente' => $idUsuario,
+            'mensaje' => $data['mensaje'],
+        ]);
 
-        if (! (bool) data_get($payload, 'success')) {
-            $message = data_get($payload, 'errors.0')
-                ?? data_get($payload, 'message')
-                ?? 'No fue posible registrar la PQRS en el servicio externo.';
+        $pqrs->load('mensajes');
 
-            throw new RuntimeException($message);
-        }
-
-        $pqrsData = data_get($payload, 'data', []);
-        $mailable = new PqrsSubmitted($user, (object) $pqrsData);
+        $mailable = new PqrsSubmitted($user, $pqrs);
         $html = view('emails.pqrs-submitted', [
             'user' => $user,
-            'pqrs' => (object) $pqrsData,
+            'pqrs' => $pqrs,
         ])->render();
 
         if (filled(config('services.n8n.email_webhook'))) {
@@ -55,15 +46,38 @@ class PqrsService
                 subject: $mailable->envelope()->subject,
                 html: $html,
                 meta: [
-                    'pqrs_id' => data_get($pqrsData, 'id_pqrs'),
+                    'pqrs_id' => $pqrs->id_pqrs,
                     'user_id' => $user->id,
-                    'tipo' => data_get($pqrsData, 'tipo', $data['tipo']),
+                    'tipo' => $pqrs->tipo,
                 ],
             );
         } else {
             Mail::to($user->email)->send($mailable);
         }
 
-        return $pqrsData;
+        return $pqrs;
+    }
+
+    public function listByUser(User $user): \Illuminate\Database\Eloquent\Collection
+    {
+        $idUsuario = $this->resolveIdUsuario($user);
+
+        return Pqrs::where('id_usuario', $idUsuario)
+            ->with('mensajes')
+            ->latest('fecha_creacion')
+            ->get();
+    }
+
+    private function resolveIdUsuario(User $user): int
+    {
+        $idUsuario = DB::table('USUARIO')
+            ->where('email', $user->email)
+            ->value('id_usuario');
+
+        if (! $idUsuario) {
+            throw new RuntimeException("No se encontró usuario en el sistema de ticketing con email: {$user->email}");
+        }
+
+        return $idUsuario;
     }
 }

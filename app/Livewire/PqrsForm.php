@@ -24,16 +24,27 @@ class PqrsForm extends Component
     {
         $data = $this->validate();
 
-        app(PqrsService::class)->submit(Auth::user(), $data);
-
-        $this->reset(['tipo', 'asunto', 'mensaje']);
-        $this->tipo = 'PREGUNTA';
-
-        session()->flash('status', 'Tu PQRS fue enviada correctamente.');
+        try {
+            app(PqrsService::class)->submit(Auth::user(), $data);
+            $this->reset(['tipo', 'asunto', 'mensaje']);
+            $this->tipo = 'PREGUNTA';
+            session()->flash('status', 'Tu PQRS fue enviada correctamente.');
+        } catch (\Throwable $e) {
+            \Log::error('PQRS save error', ['error' => $e->getMessage()]);
+            session()->flash('error', 'Ocurrió un error al enviar tu solicitud. Intenta de nuevo.');
+        }
     }
 
     public function render()
     {
-        return view('livewire.pqrs-form');
+        try {
+            $historial = app(PqrsService::class)->listByUser(Auth::user());
+        } catch (\Throwable $e) {
+            $historial = collect();
+        }
+
+        return view('livewire.pqrs-form', [
+            'historial' => $historial,
+        ]);
     }
 }

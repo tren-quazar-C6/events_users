@@ -3,6 +3,7 @@
 namespace App\Mail;
 
 use App\Models\User;
+use App\Models\Pqrs;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -15,7 +16,7 @@ class PqrsSubmitted extends Mailable
 
     public function __construct(
         public readonly User $user,
-        public readonly object $pqrs,
+        public readonly Pqrs $pqrs,
     ) {}
 
     public function envelope(): Envelope

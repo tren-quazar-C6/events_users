@@ -34,8 +34,9 @@
 
             <div class="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
                 <p class="text-sm text-sage-dark/60">Te responderemos en el menor tiempo posible.</p>
-                <button type="submit" class="inline-flex items-center justify-center px-6 py-3 rounded-btn bg-sage text-white font-semibold hover:bg-sage-dark transition">
-                    Enviar PQRS
+                <button type="submit" wire:loading.attr="disabled" wire:loading.class="opacity-50 cursor-not-allowed" class="inline-flex items-center justify-center px-6 py-3 rounded-btn bg-sage text-white font-semibold hover:bg-sage-dark transition">
+                    <span wire:loading.remove>Enviar PQRS</span>
+                    <span wire:loading>Enviando...</span>
                 </button>
             </div>
         </form>
@@ -49,4 +50,47 @@
             <p>- Guarda el asunto para identificar tu solicitud fácilmente.</p>
         </div>
     </div>
+
+    @if ($historial->count())
+        <div class="bg-white rounded-card shadow-soft p-6">
+            <h2 class="font-display text-2xl text-sage-dark">Mis solicitudes</h2>
+            <div class="mt-6 space-y-4">
+                @foreach ($historial as $pqrs)
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 border border-sage-dark/10 rounded-btn hover:bg-sage-light/30 transition">
+                        <div class="flex-1">
+                            <div class="flex flex-wrap items-center gap-3 mb-2">
+                                @php
+                                    $tipoClasses = match($pqrs->tipo) {
+                                        'PREGUNTA' => 'bg-blue-100 text-blue-700',
+                                        'QUEJA' => 'bg-orange-100 text-orange-700',
+                                        'RECLAMO' => 'bg-red-100 text-red-700',
+                                        'SUGERENCIA' => 'bg-green-100 text-green-700',
+                                        default => 'bg-sage-light text-sage-dark',
+                                    };
+                                    $estadoClasses = match($pqrs->estado) {
+                                        'ABIERTO' => 'bg-blue-50 text-blue-600',
+                                        'EN_PROCESO' => 'bg-yellow-50 text-yellow-600',
+                                        'RESPONDIDO' => 'bg-green-50 text-green-600',
+                                        'CERRADO' => 'bg-sage-light text-sage-dark/70',
+                                        default => 'bg-sage-light text-sage-dark',
+                                    };
+                                @endphp
+                                <span class="px-2 py-1 rounded text-xs font-semibold {{ $tipoClasses }}">
+                                    {{ $pqrs->tipo }}
+                                </span>
+                                <span class="px-2 py-1 rounded text-xs font-semibold border {{ $estadoClasses }}">
+                                    {{ str_replace('_', ' ', $pqrs->estado) }}
+                                </span>
+                            </div>
+                            <h3 class="font-semibold text-sage-dark">{{ $pqrs->asunto }}</h3>
+                            <p class="text-xs text-sage-dark/60 mt-1">
+                                {{ $pqrs->fecha_creacion->format('d M Y · H:i') }}
+                            </p>
+                        </div>
+                        <a href="#" class="text-sage font-semibold text-sm hover:underline">Ver detalles</a>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
 </div>

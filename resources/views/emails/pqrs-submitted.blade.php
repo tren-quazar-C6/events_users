@@ -37,11 +37,11 @@
             <div class="pill">{{ $pqrs->tipo }}</div>
             <p class="title">{{ $pqrs->asunto }}</p>
             <div class="meta">
-                <div><strong>Estado:</strong> {{ $pqrs->estado }}</div>
-                <div><strong>Fecha:</strong> {{ \Illuminate\Support\Carbon::parse($pqrs->fecha_creacion ?? now())->locale('es')->translatedFormat('j M Y H:i') }}</div>
+                <div><strong>Estado:</strong> {{ str_replace('_', ' ', $pqrs->estado) }}</div>
+                <div><strong>Fecha:</strong> {{ $pqrs->fecha_creacion->locale('es')->translatedFormat('j M Y H:i') }}</div>
             </div>
             <hr class="divider">
-            <div class="message">{{ data_get($pqrs, 'mensajes.0.mensaje', 'Tu solicitud fue registrada correctamente.') }}</div>
+            <div class="message">{{ $pqrs->mensajes->first()?->mensaje ?? 'Tu solicitud fue registrada correctamente.' }}</div>
         </div>
 
         <p style="font-size:14px;color:#6b7280;margin:24px 0 0;">
