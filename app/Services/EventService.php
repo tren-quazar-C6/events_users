@@ -89,11 +89,19 @@ class EventService
     private function fetchFromDB(): array
     {
         try {
-            return Evento::with('tipo')
+            $eventos = Evento::with('tipo')
                 ->where('activo', true)
                 ->where('publicado', true)
-                ->get()
-                ->map(function (Evento $evento): array {
+                ->get();
+
+            $minPrecios = \Illuminate\Support\Facades\DB::table('EVENTO_ZONA')
+                ->whereIn('id_evento', $eventos->pluck('id_evento'))
+                ->select('id_evento', \Illuminate\Support\Facades\DB::raw('MIN(precio) as min_precio'))
+                ->groupBy('id_evento')
+                ->pluck('min_precio', 'id_evento');
+
+            return $eventos
+                ->map(function (Evento $evento) use ($minPrecios): array {
                     $synopsis = $evento->synopsis ?? [];
                     if (empty($synopsis) && filled($evento->descripcion)) {
                         $synopsis = [$evento->descripcion];
@@ -107,7 +115,7 @@ class EventService
                         'synopsis'        => $synopsis,
                         'poster_color'    => $evento->poster_color ?? '#7BB394',
                         'image_url'       => $evento->ruta_url,
-                        'price_from'      => (int) $evento->price_from,
+                        'price_from'      => (int) ($minPrecios[$evento->getKey()] ?? $evento->price_from ?? 0),
                         'showtimes'       => $evento->fecha_evento
                             ? [['date' => $evento->fecha_evento->format('Y-m-d'), 'time' => $evento->fecha_evento->format('H:i')]]
                             : [],

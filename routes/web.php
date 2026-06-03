@@ -26,6 +26,14 @@ Route::get('/', function () {
             ->orderBy('fecha_evento')
             ->take(6)
             ->get();
+
+        $minPrecios = DB::table('EVENTO_ZONA')
+            ->whereIn('id_evento', $events->pluck('id_evento'))
+            ->select('id_evento', DB::raw('MIN(precio) as min_precio'))
+            ->groupBy('id_evento')
+            ->pluck('min_precio', 'id_evento');
+
+        $events->each(fn ($e) => $e->price_from = (int) ($minPrecios[$e->id_evento] ?? 0));
     } catch (\Throwable $exception) {
         Log::warning('Home events unavailable from DB.', [
             'message' => $exception->getMessage(),

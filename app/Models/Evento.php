@@ -95,7 +95,10 @@ class Evento extends Model
 
     public function getFormattedPriceAttribute(): string
     {
-        $price = $this->price_from_description;
+        $price = (int) ($this->price_from ?? 0);
+        if ($price <= 0) {
+            $price = $this->price_from_description;
+        }
         return $price > 0 ? number_format($price, 0, ',', '.') : 'Por confirmar';
     }
 }
