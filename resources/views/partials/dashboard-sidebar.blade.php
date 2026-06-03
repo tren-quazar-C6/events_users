@@ -35,6 +35,15 @@
                 Favoritos
             </a>
 
+            <a href="{{ route('dashboard.pqrs') }}"
+               class="flex items-center gap-3 px-3 py-2 rounded-btn transition {{ $isActive('dashboard.pqrs') }}">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 shrink-0">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h.008v.008H8.625V12zm4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h.008v.008h-.008V12zm4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h.008v.008h-.008V12z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 12c0 4.97-4.03 9-9 9a8.94 8.94 0 01-4.5-1.2L3 21l1.2-4.5A8.94 8.94 0 013 12c0-4.97 4.03-9 9-9s9 4.03 9 9z" />
+                </svg>
+                PQRS
+            </a>
+
             <a href="{{ route('dashboard.history') }}"
                class="flex items-center gap-3 px-3 py-2 rounded-btn transition {{ $isActive('dashboard.history') }}">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 shrink-0">

@@ -4,27 +4,27 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Pqrs extends Model
 {
-    protected $table = 'pqrs';
+    public $timestamps = false;
+
+    protected $table = 'PQRS';
+
+    protected $primaryKey = 'id_pqrs';
 
     protected $fillable = [
-        'user_id', 'staff_id', 'tipo', 'asunto', 'mensaje',
-        'estado', 'respuesta', 'fecha_respuesta',
+        'id_usuario', 'tipo', 'asunto', 'estado', 'asignado_staff',
     ];
 
     protected $casts = [
-        'fecha_respuesta' => 'datetime',
+        'fecha_creacion' => 'datetime',
+        'fecha_ultima_respuesta' => 'datetime',
     ];
 
-    public function user(): BelongsTo
+    public function mensajes(): HasMany
     {
-        return $this->belongsTo(User::class);
-    }
-
-    public function staff(): BelongsTo
-    {
-        return $this->belongsTo(Staff::class, 'staff_id');
+        return $this->hasMany(PqrsMensaje::class, 'id_pqrs', 'id_pqrs');
     }
 }

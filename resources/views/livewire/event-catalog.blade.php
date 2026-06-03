@@ -59,6 +59,16 @@
                                 {{ $event['title'] }}
                             </h3>
                             <div class="mt-3">
+                                <p class="text-xs text-sage-dark/60">Fecha del evento</p>
+                                <p class="text-sm font-semibold text-sage-dark">
+                                    @if (! empty($event['display_date']))
+                                        {{ $event['display_date']->locale('es')->translatedFormat('j M Y · H:i') }}
+                                    @else
+                                        Por confirmar
+                                    @endif
+                                </p>
+                            </div>
+                            <div class="mt-3">
                                 <p class="text-xs text-sage-dark/60">Precio desde</p>
                                 <p class="text-sm font-semibold text-sage">
                                     @if ($lowestPrice > 0)

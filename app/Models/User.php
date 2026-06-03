@@ -78,11 +78,6 @@ class User extends Authenticatable
         return $this->hasMany(Notificacion::class);
     }
 
-    public function pqrs(): HasMany
-    {
-        return $this->hasMany(Pqrs::class);
-    }
-
     public function hasFavorited(int $eventoId): bool
     {
         return $this->favoritos()->where('evento_id', $eventoId)->exists();

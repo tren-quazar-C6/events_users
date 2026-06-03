@@ -113,6 +113,7 @@ Route::post('/logout',   [AuthController::class, 'logout'])->name('logout')->mid
 // ─── Protegidas ──────────────────────────────────────────────────────────────
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', fn () => view('dashboard.index'))->name('dashboard');
+    Route::get('/dashboard/pqrs', fn () => view('dashboard.pqrs'))->name('dashboard.pqrs');
 
     // ─── Dashboard sub-páginas ───────────────────────────────────────────
     Route::get('/dashboard/tickets', function () {

@@ -36,6 +36,7 @@ class EventCatalog extends Component
                     mb_strtolower($this->search)
                 ))
             )
+            ->map(fn (array $event) => $this->addDisplayDate($event))
             ->values();
     }
 
@@ -55,5 +56,16 @@ class EventCatalog extends Component
             'events'     => $this->filteredEvents,
             'categories' => $this->categories,
         ]);
+    }
+
+    private function addDisplayDate(array $event): array
+    {
+        $showtime = $event['showtimes'][0] ?? null;
+
+        $event['display_date'] = filled(data_get($showtime, 'date'))
+            ? \Illuminate\Support\Carbon::parse($showtime['date'].' '.($showtime['time'] ?? '00:00'))
+            : null;
+
+        return $event;
     }
 }
