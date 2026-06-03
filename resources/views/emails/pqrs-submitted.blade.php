@@ -38,7 +38,7 @@
             <p class="title">{{ $pqrs->asunto }}</p>
             <div class="meta">
                 <div><strong>Estado:</strong> {{ str_replace('_', ' ', $pqrs->estado) }}</div>
-                <div><strong>Fecha:</strong> {{ $pqrs->fecha_creacion->locale('es')->translatedFormat('j M Y H:i') }}</div>
+                <div><strong>Fecha:</strong> {{ \Illuminate\Support\Carbon::parse($pqrs->fecha_creacion ?? now())->locale('es')->translatedFormat('j M Y H:i') }}</div>
             </div>
             <hr class="divider">
             <div class="message">{{ $pqrs->mensajes->first()?->mensaje ?? 'Tu solicitud fue registrada correctamente.' }}</div>

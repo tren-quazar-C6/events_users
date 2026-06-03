@@ -22,6 +22,7 @@ class PqrsService
             'tipo' => $data['tipo'],
             'asunto' => $data['asunto'],
             'estado' => 'ABIERTO',
+            'fecha_creacion' => now(),
         ]);
 
         PqrsMensaje::create([
@@ -29,6 +30,7 @@ class PqrsService
             'remitente' => 'USUARIO',
             'id_remitente' => $idUsuario,
             'mensaje' => $data['mensaje'],
+            'fecha' => now(),
         ]);
 
         $pqrs->load('mensajes');
