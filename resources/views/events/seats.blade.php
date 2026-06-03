@@ -63,7 +63,7 @@
         },
         seatClass(seat) {
             if (seat === null) return 'w-4';
-            const base = 'w-8 h-8 rounded shadow-sm transition-transform ';
+            const base = 'w-5 h-5 sm:w-8 sm:h-8 rounded shadow-sm transition-transform ';
             if (seat.s === 'a')   return base + 'bg-primary-container hover:scale-110 cursor-pointer';
             if (seat.s === 'sel') return base + 'bg-tertiary-container ring-2 ring-tertiary ring-offset-2 hover:scale-110 cursor-pointer shadow-md';
             if (seat.s === 'o')   return base + 'bg-secondary-fixed-dim opacity-60 cursor-not-allowed';
@@ -87,10 +87,10 @@
      class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-16 py-12 grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
 
     {{-- ── Mapa de asientos ──────────────────────────────────────── --}}
-    <div class="lg:col-span-8 bg-surface-container-lowest rounded-3xl p-8 md:p-12 shadow-sm border border-secondary-container/20 overflow-hidden">
+    <div class="lg:col-span-8 bg-surface-container-lowest rounded-3xl p-4 sm:p-8 md:p-12 shadow-sm border border-secondary-container/20 overflow-x-auto">
 
         {{-- Escenario --}}
-        <div class="relative w-full mb-16 text-center">
+        <div class="relative w-full mb-12 sm:mb-16 text-center">
             <div class="stage-curve w-3/4 mx-auto h-2 bg-gradient-to-b from-primary/20 to-transparent shadow-[0_15px_30px_-5px_rgba(50,105,78,0.15)]"></div>
             <span class="font-label-lg text-label-lg text-primary uppercase tracking-[0.3em] mt-5 inline-block">Escenario</span>
         </div>
@@ -103,11 +103,11 @@
         --}}
 
         {{-- Grid de asientos --}}
-        <div class="seat-grid flex flex-col gap-3 items-center">
+        <div class="seat-grid flex flex-col gap-2 sm:gap-3 items-start sm:items-center min-w-max">
             <template x-for="(row, rowIdx) in rows" :key="row.label">
-                <div class="flex gap-1.5 items-center">
-                    <span class="w-6 text-right font-label-sm text-label-sm text-outline pr-1" x-text="row.label"></span>
-                    <div class="flex gap-1.5 items-center">
+                <div class="flex gap-1 sm:gap-1.5 items-center whitespace-nowrap">
+                    <span class="hidden sm:block w-6 text-right font-label-sm text-label-sm text-outline pr-1" x-text="row.label"></span>
+                    <div class="flex gap-1 sm:gap-1.5 items-center">
                         <template x-for="(seat, seatIdx) in row.seats" :key="seatIdx">
                             <div
                                 :class="seatClass(seat)"
@@ -115,7 +115,7 @@
                             </div>
                         </template>
                     </div>
-                    <span class="w-6 text-left font-label-sm text-label-sm text-outline pl-1" x-text="row.label"></span>
+                    <span class="hidden sm:block w-6 text-left font-label-sm text-label-sm text-outline pl-1" x-text="row.label"></span>
                 </div>
             </template>
         </div>
